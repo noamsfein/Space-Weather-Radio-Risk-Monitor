@@ -1,0 +1,9 @@
+{"time_tag":"2026-08-11T00:00:00Z","kp_value":4.0,"source":"synthetic://kp-threshold-fixture","ingested_at":"2026-08-11T00:00:05Z"}
+{"time_tag":"2026-08-11T00:05:00Z","kp_value":5.0,"source":"synthetic://kp-threshold-fixture","ingested_at":"2026-08-11T00:05:05Z"}
+{"time_tag":"2026-08-11T00:10:00Z","kp_value":6.3,"source":"synthetic://kp-threshold-fixture","ingested_at":"2026-08-11T00:10:05Z"}
+{"time_tag":"2026-08-11T00:10:00Z","kp_value":6.3,"source":"synthetic://kp-threshold-fixture","ingested_at":"2026-08-11T00:10:05Z"}
+{"time_tag":"2026-08-11T00:20:00Z","kp_value":5.5,"source":"synthetic://kp-threshold-fixture","ingested_at":"2026-08-11T00:20:05Z"}
+{"time_tag":"2026-08-11T00:25:00Z","kp_value":5.2,"source":"synthetic://kp-threshold-fixture","ingested_at":"2026-08-11T00:25:05Z"}
+{"time_tag":"2026-08-11T00:26:00Z","kp_value":5.0,"source":"synthetic://kp-threshold-fixture","ingested_at":"2026-08-11T00:26:05Z"}
+{"time_tag":"2026-08-11T00:27:00Z","kp_value":7.0,"source":"synthetic://kp-threshold-fixture","ingested_at":"2026-08-11T00:27:05Z"}
+{"time_tag":"2026-08-11T00:30:00Z","kp_value":6.7,"source":"synthetic://kp-threshold-fixture","ingested_at":"2026-08-11T00:30:05Z"}

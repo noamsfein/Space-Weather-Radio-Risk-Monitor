@@ -1,0 +1,8 @@
+{"case_id":"missing_time_tag","record":{"estimated_kp":4.0},"expected_error":"time_tag is required"}
+{"case_id":"malformed_time_tag","record":{"time_tag":"not-a-time","estimated_kp":4.0},"expected_error":"time_tag must be a valid timestamp"}
+{"case_id":"missing_kp_value","record":{"time_tag":"2026-08-11T00:00:00"},"expected_error":"estimated_kp or kp_value is required"}
+{"case_id":"string_kp","record":{"time_tag":"2026-08-11T00:00:00","estimated_kp":"high"},"expected_error":"Kp must be numeric"}
+{"case_id":"negative_kp","record":{"time_tag":"2026-08-11T00:00:00","estimated_kp":-0.33},"expected_error":"Kp must be between 0 and 9"}
+{"case_id":"kp_above_nine","record":{"time_tag":"2026-08-11T00:00:00","estimated_kp":9.33},"expected_error":"Kp must be between 0 and 9"}
+{"case_id":"nan_string","record":{"time_tag":"2026-08-11T00:00:00","estimated_kp":"NaN"},"expected_error":"Kp must be finite"}
+{"case_id":"wrong_canonical_source","record":{"time_tag":"2026-08-11T00:00:00Z","kp_value":4.0,"source":"https://example.com/not-noaa","ingested_at":"2026-08-11T00:00:05Z"},"expected_error":"source must be documented NOAA or synthetic replay provenance"}
