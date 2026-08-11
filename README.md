@@ -6,7 +6,7 @@ Kafka-based final project for MSDS 682, Data Stream Processing (Summer 2026).
 
 **Approved proposal:** [`output/pdf/final_project_proposal_nsfein_nnaderzad.pdf`](output/pdf/final_project_proposal_nsfein_nnaderzad.pdf)
 
-**Current status:** Planning and initial setup. The commands and artifacts described below are the agreed implementation target. Check [the team checklist](docs/project-checklist.md) for current progress; do not assume the demo works until its end-to-end acceptance task is checked off.
+**Current status:** Planning and initial setup. The commands and artifacts described below are the agreed implementation target. Check [the team checklist](docs/project-checklist.md) for current progress; do not assume the demo works until its end-to-end acceptance task is checked off. The presentation scenario and backup procedure are in [the demo plan](docs/demo-plan.md).
 
 **Repository:** `https://github.com/noamsfein/Space-Weather-Radio-Risk-Monitor`. This directory now has its own Git root and `main` tracks the project repository rather than the unrelated home-directory repository.
 
