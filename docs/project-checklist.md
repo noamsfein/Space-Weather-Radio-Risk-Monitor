@@ -22,6 +22,30 @@ Status notation:
 - `[~]` in progress — replace the space manually while working
 - `[x]` implemented, reviewed, and verified; initials and PR number must already be filled in
 
+## Manual and external actions
+
+Most of this checklist is normal repository work that can be implemented and tested from a task branch. The labels below appear only where a person must act outside the codebase or make a human decision.
+
+| Label | Meaning |
+|---|---|
+| `[MANUAL SETUP]` | One-time software or GitHub configuration must be completed by a person. |
+| `[PERMISSION]` | Repository or course-system access must be granted or accepted. |
+| `[MESSAGE]` | One partner must notify, coordinate with, or request action from another person. |
+| `[HUMAN CHECK]` | A person must inspect, approve, rehearse, or verify the result. |
+| `[MANUAL SUBMISSION]` | A person must upload or confirm something in an external course system. |
+
+### One-time setup and access
+
+- [x] **`[PERMISSION]` Invite Niki to the GitHub repository** · Initials: `NF` · PR: `N/A—GitHub setting`. Noam sent the repository invitation.
+- [ ] **`[PERMISSION]` Niki accepts the invitation and verifies access** · Initials: `____` · PR: `N/A—external access`. Niki should clone or pull the repository, create a task branch when beginning real work, and confirm that she can push that branch and open a PR. Do not test access by pushing directly to `main`.
+- [ ] **`[MANUAL SETUP]` Save the GitHub protection rule for `main`** · Initials: `____` · PR: `N/A—GitHub setting`. Require a pull request, one approval, and resolved conversations before merging. This needs repository administration access and is configured in GitHub, not in project code.
+- [ ] **`[MANUAL SETUP]` Verify each development computer** · Initials: `____` · PR: `N/A—local setup`. Each partner who will run the project needs Git, Python 3.11, and Docker Desktop with `docker compose`. GitHub CLI (`gh`) is optional if PRs will be opened in the browser.
+- [ ] **`[MANUAL SETUP]` Open Docker Desktop before the first Kafka run** · Initials: `____` · PR: `N/A—local setup`. Docker must be running; the repository's Compose file will create the broker, and the demo code will create or verify `kp_observations`. Do not install Kafka separately or manually create a Kafka environment or topic.
+
+The NOAA endpoint is public and needs no account, permission, API key, or manual download. A live OpenAI key is optional and belongs only in a local `.env`; never send it to a partner or commit it. The required replay and deterministic briefing must work without it.
+
+Human actions that repeat during development are already part of every task's definition of done: claim the task with initials, announce the branch, request the other partner's PR review, respond to review comments, and merge only after approval. These are collaboration steps, not additional implementation tasks.
+
 ## Branch and pull-request workflow
 
 Use one branch per task with this naming pattern:
@@ -187,7 +211,7 @@ The live NOAA poller is not on the critical path. Build it only after the replay
   - Completed: this directory is now its own Git repository, the default branch is `main`, and `origin` is `https://github.com/noamsfein/Space-Weather-Radio-Risk-Monitor.git`.
   - Verified: `git rev-parse --show-toplevel` returns this project directory, and the unrelated home-directory repository is no longer in scope.
 
-- [ ] **P0-1 · Confirm the contract and claim the first tasks** · Initials: `____` · PR: `____`
+- [ ] **P0-1 · Confirm the contract and claim the first tasks `[MESSAGE] [HUMAN CHECK]`** · Initials: `____` · PR: `____`
   - Prerequisites: P0-0.
   - Branch suffix: `confirm-project-contract`.
   - Do: read `README.md`, this checklist, `DATA_SOURCE.md`, `AI_USAGE.md`, and the proposal together. Confirm the fixed decisions and claim non-overlapping ready tasks.
@@ -442,7 +466,7 @@ The live NOAA poller is not on the critical path. Build it only after the replay
   - Cover test/evaluation results, bounded AI and verification, exact review path, expected artifacts, fallback, team contributions, limitations, and one realistic next step.
   - Done when: it directly supports written-rubric category 4.
 
-- [ ] **REPORT-5 · Assemble and verify `report.pdf`** · Initials: `____` · PR: `____`
+- [ ] **REPORT-5 · Assemble and verify `report.pdf` `[HUMAN CHECK]`** · Initials: `____` · PR: `____`
   - Prerequisites: REPORT-1 through REPORT-4.
   - Keep it concise and use readable charts/code samples. Include actual result/evaluation numbers.
   - Render every page and check for clipping, tiny text, inconsistent filenames, planned-vs-actual claims, and missing attribution.
@@ -471,12 +495,12 @@ Do not pursue the optional +3 extension until every row above has complete evide
   - Prefer a short replay or saved output. Put backup terminal output or screenshots in the deck.
   - Done when: the story still works if Docker, NOAA, Wi-Fi, or the OpenAI API fails during class.
 
-- [ ] **PRES-3 · Divide the 7 minutes** · Initials: `____` · PR: `____`
+- [ ] **PRES-3 · Divide the 7 minutes `[MESSAGE] [HUMAN CHECK]`** · Initials: `____` · PR: `____`
   - Prerequisites: PRES-1.
   - Both must speak. Agree on a roughly equal split and simple handoff.
   - Done when: transitions are scripted and neither partner exceeds about 3.5 minutes.
 
-- [ ] **PRES-4 · Rehearse and prepare Q&A** · Initials: `____` · PR: `____`
+- [ ] **PRES-4 · Rehearse and prepare Q&A `[MESSAGE] [HUMAN CHECK]`** · Initials: `____` · PR: `____`
   - Prerequisites: PRES-2, PRES-3.
   - Rehearse twice under 7 minutes.
   - Be ready to explain: why Kafka; why the constant key; why 15 minutes; why Kp 6; why replay; duplicate/crossing behavior; why AI is bounded; limitations; and what each partner contributed.
@@ -510,16 +534,17 @@ Do not pursue the optional +3 extension until every row above has complete evide
   - Top-level folder: `final_project_nsfein_nnaderzad/`.
   - Done when: opening the ZIP shows exactly one top-level project folder.
 
-- [ ] **PKG-4 · Clean-room TA test from extracted ZIP** · Initials: `____` · PR: `____`
+- [ ] **PKG-4 · Clean-room TA test from extracted ZIP `[HUMAN CHECK]`** · Initials: `____` · PR: `____`
   - Prerequisites: PKG-3.
   - Extract to a new directory. Follow only the included README. Use no network and no OpenAI key for the required replay if practical.
   - Confirm all expected artifacts and validation evidence are created.
   - Done when: the extracted submission passes, cleanup works, and any discrepancy is fixed in the source and rebuilt into a new ZIP.
 
-- [ ] **SUBMIT-1 · Final joint approval and upload** · Initials: `____` · PR: `____`
+- [ ] **SUBMIT-1 · Final joint approval and upload `[MESSAGE] [HUMAN CHECK] [MANUAL SUBMISSION]`** · Initials: `____` · PR: `____`
   - Prerequisites: PKG-4.
   - Both partners review the exact final file so the same ZIP is submitted.
   - Upload before Friday, August 14 at 11:59 PM PDT. If Canvas has not linked the team, both students upload the same ZIP.
+  - `[MESSAGE]` If Canvas team membership or the required upload path is unclear, contact the instructor or TA early and keep their response with the submission evidence.
   - Done when: Canvas confirms the correct filename and upload for each required student.
 
 ## Scope-cut rules
