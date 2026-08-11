@@ -30,5 +30,8 @@ final_project_*.zip
 /Final Project Requirements - MSDS 682.pdf
 /Final Written Report and Code Rubric - MSDS 682.pdf
 /MSDS 682 · Lecture 7A · Final Project.pdf
-/output/
+/output/*
+!/output/pdf/
+/output/pdf/*
+!/output/pdf/final_project_proposal_nsfein_nnaderzad.pdf
 /tmp/
