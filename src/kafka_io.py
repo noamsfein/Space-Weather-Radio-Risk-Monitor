@@ -38,6 +38,10 @@ class KafkaConsumeTimeout(KafkaIOError):
     """Raised when no Kafka event arrives before the requested deadline."""
 
 
+class KafkaMessageError(KafkaIOError):
+    """Raised when one consumed message violates the project contract."""
+
+
 @dataclass(frozen=True)
 class PublishedEvent:
     topic: str
@@ -212,9 +216,9 @@ def consume_event(
         try:
             key = raw_key.decode("utf-8")
         except (AttributeError, UnicodeDecodeError) as exc:
-            raise KafkaIOError("Kafka message key must be UTF-8 bytes") from exc
+            raise KafkaMessageError("Kafka message key must be UTF-8 bytes") from exc
         if key != KP_MESSAGE_KEY:
-            raise KafkaIOError(
+            raise KafkaMessageError(
                 f"Kafka message key must be {KP_MESSAGE_KEY!r}, received {key!r}"
             )
 
@@ -223,7 +227,9 @@ def consume_event(
             value = raw_value.decode("utf-8")
             event = KpEvent.model_validate_json(value)
         except (AttributeError, UnicodeDecodeError, ValueError) as exc:
-            raise KafkaIOError("Kafka message value is not a valid KpEvent") from exc
+            raise KafkaMessageError(
+                "Kafka message value is not a valid KpEvent"
+            ) from exc
 
         return ConsumedEvent(
             topic=message.topic(),
