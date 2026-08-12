@@ -346,7 +346,7 @@ The live NOAA poller is not on the critical path. Build it only after the replay
 
 ## Phase 4 — bounded AI and evaluation
 
-- [~] **AI-1 · Define briefing facts and deterministic fallback** · Initials: `NF` · PR: `pending`
+- [~] **AI-1 · Define briefing facts and deterministic fallback** · Initials: `NF` · PR: `#17`
   - Prerequisites: OUTPUT-1.
   - Branch suffix: `add-briefing-fallback`.
   - Create: `src/briefing.py` with structured input containing only latest Kp, rolling maximum, UTC window, and rule-based label.
