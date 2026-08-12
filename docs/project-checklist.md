@@ -464,27 +464,27 @@ The live NOAA poller is not on the critical path. Build it only after the replay
   - Use the same chart in the report and presentation when possible.
   - Done when: one representative event can be traced across every box and every box maps to submitted code or artifacts.
 
-- [ ] **REPORT-1 · Draft problem and result section** · Initials: `____` · PR: `____`
+- [~] **REPORT-1 · Draft problem and result section** · Initials: `NN` · PR: `pending`
   - Prerequisites: E2E-1.
   - Cover target user, problem, narrow scope, alert rule, and one observable representative result.
   - Done when: it directly supports written-rubric category 1 without marketing language.
 
-- [ ] **REPORT-2 · Draft data and contract section** · Initials: `____` · PR: `____`
+- [~] **REPORT-2 · Draft data and contract section** · Initials: `NN` · PR: `pending`
   - Prerequisites: DOC-2, CONTRACT-2.
   - Cover source/limitations, raw-to-canonical mapping, validation, topic/key, representative event, dedup identity, and replay provenance.
   - Done when: it directly supports written-rubric category 2.
 
-- [ ] **REPORT-3 · Draft architecture and implementation section** · Initials: `____` · PR: `____`
+- [~] **REPORT-3 · Draft architecture and implementation section** · Initials: `NN` · PR: `pending`
   - Prerequisites: DOC-3.
   - Cover the end-to-end chart, one real replay example, rolling/crossing logic, outputs, and why a one-topic local Kafka design was chosen.
   - Done when: it directly supports written-rubric category 3 and describes implemented behavior only.
 
-- [ ] **REPORT-4 · Draft evidence and reproducibility section** · Initials: `____` · PR: `____`
+- [~] **REPORT-4 · Draft evidence and reproducibility section** · Initials: `NN` · PR: `pending`
   - Prerequisites: E2E-2, AI-5.
   - Cover test/evaluation results, bounded AI and verification, exact review path, expected artifacts, fallback, team contributions, limitations, and one realistic next step.
   - Done when: it directly supports written-rubric category 4.
 
-- [ ] **REPORT-5 · Assemble and verify `report.pdf` `[HUMAN CHECK]`** · Initials: `____` · PR: `____`
+- [~] **REPORT-5 · Assemble and verify `report.pdf` `[HUMAN CHECK]`** · Initials: `NN` · PR: `pending`
   - Prerequisites: REPORT-1 through REPORT-4.
   - Keep it concise and use readable charts/code samples. Include actual result/evaluation numbers.
   - Render every page and check for clipping, tiny text, inconsistent filenames, planned-vs-actual claims, and missing attribution.
