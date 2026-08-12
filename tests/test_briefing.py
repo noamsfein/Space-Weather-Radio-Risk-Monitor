@@ -1,5 +1,6 @@
 import json
 from pathlib import Path
+from types import SimpleNamespace
 
 import pytest
 from pydantic import ValidationError
@@ -9,9 +10,13 @@ from src.alert_output import write_alert_output
 from src.briefing import (
     BriefingError,
     BriefingFacts,
+    DEFAULT_OPENAI_MODEL,
+    MODEL_INSTRUCTIONS,
     deterministic_briefing,
+    generate_briefing,
     load_briefing_facts,
     main,
+    request_model_candidate,
     validate_briefing,
     write_briefing,
 )
@@ -182,6 +187,186 @@ def representative_facts() -> BriefingFacts:
         window_end_utc="2026-08-11T00:27:00Z",
         risk_label="elevated",
     )
+
+
+class FakeResponses:
+    def __init__(self, output_text: str | None = None, error: Exception | None = None):
+        self.output_text = output_text
+        self.error = error
+        self.calls: list[dict[str, object]] = []
+
+    def create(self, **kwargs: object) -> SimpleNamespace:
+        self.calls.append(kwargs)
+        if self.error is not None:
+            raise self.error
+        return SimpleNamespace(output_text=self.output_text)
+
+
+class FakeClient:
+    def __init__(self, responses: FakeResponses):
+        self.responses = responses
+
+
+def test_model_request_sends_only_approved_facts_and_bounded_prompt() -> None:
+    responses = FakeResponses(deterministic_briefing(representative_facts()))
+
+    candidate = request_model_candidate(
+        representative_facts(), FakeClient(responses), DEFAULT_OPENAI_MODEL
+    )
+
+    assert candidate == deterministic_briefing(representative_facts())
+    assert responses.calls == [
+        {
+            "model": "gpt-5-nano",
+            "reasoning": {"effort": "low"},
+            "instructions": MODEL_INSTRUCTIONS,
+            "input": (
+                '{"latest_kp":7.0,"risk_label":"elevated",'
+                '"rolling_15m_max_kp":7.0,'
+                '"window_end_utc":"2026-08-11T00:27:00Z",'
+                '"window_start_utc":"2026-08-11T00:12:00Z"}'
+            ),
+            "max_output_tokens": 600,
+        }
+    ]
+
+
+def test_live_model_candidate_is_used_only_after_validation() -> None:
+    candidate = deterministic_briefing(representative_facts())
+    responses = FakeResponses(candidate)
+
+    generation = generate_briefing(
+        representative_facts(),
+        use_live_ai=True,
+        client=FakeClient(responses),
+        model="test-model",
+    )
+
+    assert generation.text == candidate
+    assert generation.source == "model"
+    assert generation.model == "test-model"
+    assert generation.candidate == candidate
+    assert generation.fallback_reason is None
+    assert generation.validation is not None
+    assert generation.validation.accepted is True
+
+
+def test_missing_key_uses_deterministic_fallback(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.delenv("OPENAI_API_KEY", raising=False)
+
+    generation = generate_briefing(representative_facts(), use_live_ai=True)
+
+    assert generation.text == deterministic_briefing(representative_facts())
+    assert generation.source == "fallback"
+    assert generation.fallback_reason == "OPENAI_API_KEY is missing"
+
+
+def test_whitespace_key_and_model_use_safe_defaults(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setenv("OPENAI_API_KEY", "   ")
+    monkeypatch.setenv("OPENAI_MODEL", "   ")
+
+    generation = generate_briefing(representative_facts(), use_live_ai=True)
+
+    assert generation.source == "fallback"
+    assert generation.model == DEFAULT_OPENAI_MODEL
+    assert generation.fallback_reason == "OPENAI_API_KEY is missing"
+
+
+def test_model_request_failure_uses_deterministic_fallback() -> None:
+    responses = FakeResponses(error=TimeoutError("simulated timeout"))
+
+    generation = generate_briefing(
+        representative_facts(), use_live_ai=True, client=FakeClient(responses)
+    )
+
+    assert generation.source == "fallback"
+    assert generation.candidate is None
+    assert generation.fallback_reason == "model request failed: TimeoutError"
+
+
+def test_real_client_factory_receives_key_and_timeout(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    candidate = deterministic_briefing(representative_facts())
+    fake_client = FakeClient(FakeResponses(candidate))
+    constructor_calls: list[dict[str, object]] = []
+
+    def fake_openai(**kwargs: object) -> FakeClient:
+        constructor_calls.append(kwargs)
+        return fake_client
+
+    monkeypatch.setattr(briefing_module, "OpenAI", fake_openai)
+
+    generation = generate_briefing(
+        representative_facts(), use_live_ai=True, api_key="private-test-key"
+    )
+
+    assert generation.source == "model"
+    assert constructor_calls == [
+        {"api_key": "private-test-key", "timeout": 10.0, "max_retries": 0}
+    ]
+
+
+def test_rejected_model_candidate_is_recorded_but_not_used() -> None:
+    candidate = "Kp is 9, the label is normal, and operators should take action."
+
+    generation = generate_briefing(
+        representative_facts(),
+        use_live_ai=True,
+        client=FakeClient(FakeResponses(candidate)),
+    )
+
+    assert generation.text == deterministic_briefing(representative_facts())
+    assert generation.source == "fallback"
+    assert generation.candidate == candidate
+    assert generation.validation is not None
+    assert generation.validation.accepted is False
+    assert generation.fallback_reason is not None
+    assert generation.fallback_reason.startswith("model response rejected:")
+
+
+def test_live_writer_can_save_model_candidate_for_evaluation(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    candidate = deterministic_briefing(representative_facts())
+    output_path = tmp_path / "briefing.txt"
+    candidate_path = tmp_path / "candidate.txt"
+    monkeypatch.setattr(briefing_module, "load_dotenv", lambda: False)
+
+    written = write_briefing(
+        replay_alert_file(tmp_path),
+        output_path,
+        use_live_ai=True,
+        client=FakeClient(FakeResponses(candidate)),
+        candidate_path=candidate_path,
+    )
+
+    assert written == candidate
+    assert output_path.read_text() == candidate + "\n"
+    assert candidate_path.read_text() == candidate + "\n"
+
+
+def test_failed_live_request_removes_stale_candidate(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    candidate_path = tmp_path / "candidate.txt"
+    candidate_path.write_text("stale response\n")
+    monkeypatch.setattr(briefing_module, "load_dotenv", lambda: False)
+
+    written = write_briefing(
+        replay_alert_file(tmp_path),
+        tmp_path / "briefing.txt",
+        use_live_ai=True,
+        client=FakeClient(FakeResponses(error=TimeoutError("simulated"))),
+        candidate_path=candidate_path,
+    )
+
+    assert written == deterministic_briefing(representative_facts())
+    assert not candidate_path.exists()
 
 
 def test_validator_accepts_correct_candidate_and_exposes_all_checks() -> None:
