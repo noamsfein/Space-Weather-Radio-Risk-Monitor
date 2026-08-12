@@ -329,7 +329,7 @@ The live NOAA poller is not on the critical path. Build it only after the replay
   - Use a JSON object with an `alerts` list so the replay can show both crossings. Write through a temporary file so a failed run does not leave partial JSON.
   - Done when: the saved JSON contains the two expected alerts and no AI-derived decision field.
 
-- [~] **OUTPUT-2 · Write `metrics.csv`** · Initials: `NF` · PR: `pending`
+- [~] **OUTPUT-2 · Write `metrics.csv`** · Initials: `NF` · PR: `#14`
   - Prerequisites: PROCESS-1.
   - Branch suffix: `write-metrics-output`.
   - Include: `time_tag`, Kp value, rolling maximum, risk label, alert-emitted flag, and processing status.
