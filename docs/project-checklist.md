@@ -280,7 +280,7 @@ The live NOAA poller is not on the critical path. Build it only after the replay
 
 ## Phase 2 — Kafka and replay ingestion
 
-- [~] **KAFKA-1 · Pass a broker smoke test** · Initials: `NF` · PR: `#8`
+- [x] **KAFKA-1 · Pass a broker smoke test** · Initials: `NF` · PR: `#8`
   - Prerequisites: P0-4, P0-3, CONTRACT-1.
   - Branch suffix: `add-kafka-io`.
   - Create: small shared Kafka producer/consumer helpers if needed.
@@ -301,8 +301,9 @@ The live NOAA poller is not on the critical path. Build it only after the replay
   - Branch suffix: `add-noaa-poller`.
   - Create: `src/live_poller.py` using the same normalization and producer code.
   - Poll every 60 seconds, use HTTP timeouts, publish unseen `time_tag` values only, log failures, and avoid fabricated data.
-  - Tests: mock HTTP responses, time, duplicates, invalid JSON, timeouts, and empty data. Unit tests must not call NOAA.
-  - Done when: a short `--once` run publishes a new event or clearly reports no new timestamp, while cached replay still works if NOAA is unavailable.
+  - Tests: mock HTTP responses, time, duplicates, invalid JSON, timeouts, and empty data. Include one mocked full NOAA response so the poller is tested against the endpoint's realistic array shape and record count without making unit tests call NOAA.
+  - Optional final viability check: fetch a fresh live response into a temporary file before submission, validate its shape/cadence/fields, and update the dated source profile only if the committed evidence is deliberately refreshed. Never make the required demo depend on this call.
+  - Done when: a short `--once` run publishes a new event or clearly reports no new timestamp, the mocked full-response test passes, and cached replay still works if NOAA is unavailable.
 
 ## Phase 3 — stream processing and useful outputs
 
@@ -420,6 +421,14 @@ The live NOAA poller is not on the critical path. Build it only after the replay
   - Branch suffix: `verify-offline-fallback`.
   - Run with `OPENAI_API_KEY` unset and without relying on NOAA.
   - Done when: replay still passes, `briefing.txt` clearly comes from the deterministic fallback, and the README identifies this as the required reviewer path.
+
+- [ ] **E2E-DATA · Larger replay robustness test — optional after the base path is green** · Initials: `____` · PR: `____`
+  - Prerequisites: E2E-1 and E2E-2.
+  - Branch suffix: `test-larger-replay`.
+  - Create or generate a separately labeled deterministic replay of approximately 100–300 canonical events. Preserve event-time order and include enough normal, elevated, duplicate, expiry, and rearm cases to verify longer-running state behavior.
+  - Run it through the real Kafka producer and consumer, record expected/actual message, unique-event, duplicate, and alert counts, and confirm processing completes without stale offsets or reused outputs.
+  - Keep the nine-message fixture as the presentation and required reviewer path; summarize the larger result instead of presenting every row.
+  - Done when: the larger replay has a reproducible generator or committed non-private fixture, a deterministic expected-results file, a passing automated Kafka acceptance test, and a short saved summary. Skip this task if any base requirement is incomplete.
 
 - [ ] **E2E-3 · Failure recovery demonstration — optional bonus only** · Initials: `____` · PR: `____`
   - Prerequisites: every base task through E2E-2 and core docs complete.
