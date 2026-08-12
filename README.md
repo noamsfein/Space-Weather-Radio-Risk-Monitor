@@ -100,6 +100,14 @@ The constant key keeps the single planetary sequence ordered if the topic later 
 
 The repository includes a real NOAA subset at `data/sample_or_replay_data/noaa_raw_sample.json`, its dated viability profile at `data/sample_or_replay_data/source_profile.json`, and a clearly labeled synthetic threshold replay at `data/sample_or_replay_data/kp_replay.jsonl`. The synthetic fixture is necessary because quiet live snapshots may contain no Kp 6 crossing.
 
+With the local Kafka broker running, publish the complete nine-message fixture with:
+
+```bash
+python -m src.replay_producer
+```
+
+Use `--delay-seconds 0.25` when a slower event-by-event replay is helpful for the presentation. The command validates the entire JSONL file and its nondecreasing event-time order before publishing anything; it deliberately preserves the repeated `00:10` record so the consumer can demonstrate deduplication.
+
 ## Alert behavior
 
 For each valid observation, the consumer calculates the maximum `kp_value` in the inclusive 15-minute event-time window ending at the current `time_tag`.
