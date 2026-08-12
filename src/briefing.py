@@ -6,8 +6,10 @@ import argparse
 import json
 import math
 import os
+import re
 import tempfile
 from collections.abc import Sequence
+from dataclasses import dataclass
 from datetime import datetime
 from pathlib import Path
 from typing import Any, Literal
@@ -68,6 +70,191 @@ class BriefingFacts(BaseModel):
         if window_start > window_end:
             raise ValueError("briefing window start must not follow its end")
         return self
+
+
+@dataclass(frozen=True)
+class BriefingCheck:
+    name: str
+    passed: bool
+    detail: str
+
+
+@dataclass(frozen=True)
+class BriefingValidation:
+    accepted: bool
+    checks: tuple[BriefingCheck, ...]
+    rejection_reasons: tuple[str, ...]
+
+
+_NUMBER_PATTERN = re.compile(r"(?<![\w])\d+(?:\.\d+)?(?![\w])")
+_SENTENCE_END_PATTERN = re.compile(r"[.!?](?=\s|$)")
+_RISK_LABELS = frozenset({"normal", "elevated"})
+_UNSUPPORTED_PATTERNS = {
+    "cause": (
+        r"\bcaused? by\b",
+        r"\bsolar flare(?:s)?\b",
+        r"\bcoronal mass ejection(?:s)?\b",
+        r"\bcme(?:s)?\b",
+        r"\bsolar storm(?:s)?\b",
+    ),
+    "location": (
+        r"\bhigh[- ]latitude(?:s)?\b",
+        r"\bpolar region(?:s)?\b",
+        r"\bnorthern hemisphere\b",
+        r"\bsouthern hemisphere\b",
+        r"\b(?:in|near|over) the poles?\b",
+    ),
+    "impact": (
+        r"\bblackout(?:s)?\b",
+        r"\bdisrupt(?:s|ed|ion|ions)?\b",
+        r"\binterference\b",
+        r"\bfade(?:s|d)?\b",
+        r"\bdegraded? propagation\b",
+    ),
+    "recommendation": (
+        r"\brecommend(?:s|ed|ation|ations)?\b",
+        r"\bshould\b",
+        r"\bswitch frequencies\b",
+        r"\bchange frequencies\b",
+        r"\bavoid transmitting\b",
+        r"\btake action\b",
+    ),
+}
+
+
+def _number_check(candidate: str, facts: BriefingFacts) -> BriefingCheck:
+    without_timestamps = candidate
+    for timestamp in (facts.window_start_utc, facts.window_end_utc):
+        without_timestamps = without_timestamps.replace(timestamp, "")
+    without_timestamps = re.sub(
+        r"\b15[- ]minute\b", "approved-window", without_timestamps,
+        flags=re.IGNORECASE,
+    )
+
+    found = [float(value) for value in _NUMBER_PATTERN.findall(without_timestamps)]
+    approved = {facts.latest_kp, facts.rolling_15m_max_kp}
+    unsupported = sorted({value for value in found if value not in approved})
+    if unsupported:
+        return BriefingCheck(
+            "approved_numbers",
+            False,
+            f"unsupported numeric value(s): {unsupported}",
+        )
+    return BriefingCheck(
+        "approved_numbers",
+        True,
+        "all numeric values match approved Kp facts or the named 15-minute window",
+    )
+
+
+def _timestamp_check(candidate: str, facts: BriefingFacts) -> BriefingCheck:
+    timestamp_like = re.findall(
+        r"\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:Z|[+-]\d{2}:\d{2})",
+        candidate,
+    )
+    approved = {facts.window_start_utc, facts.window_end_utc}
+    unsupported = sorted(set(timestamp_like) - approved)
+    if unsupported:
+        return BriefingCheck(
+            "approved_timestamps",
+            False,
+            f"unsupported timestamp(s): {unsupported}",
+        )
+    return BriefingCheck(
+        "approved_timestamps",
+        True,
+        "all supplied timestamps match the approved UTC window",
+    )
+
+
+def validate_briefing(
+    candidate: str, facts: BriefingFacts
+) -> BriefingValidation:
+    """Check candidate wording against facts without changing the candidate."""
+
+    stripped = candidate.strip()
+    checks: list[BriefingCheck] = []
+
+    checks.append(
+        BriefingCheck(
+            "nonempty",
+            bool(stripped),
+            "candidate contains text" if stripped else "candidate is empty",
+        )
+    )
+
+    sentence_count = len(_SENTENCE_END_PATTERN.findall(stripped))
+    if stripped and sentence_count == 0:
+        sentence_count = 1
+    checks.append(
+        BriefingCheck(
+            "sentence_limit",
+            sentence_count <= 2,
+            f"candidate contains {sentence_count} sentence(s); maximum is 2",
+        )
+    )
+
+    lowered = stripped.casefold()
+    present_labels = {label for label in _RISK_LABELS if re.search(
+        rf"\b{re.escape(label)}\b", lowered
+    )}
+    approved_label_negated = bool(
+        re.search(
+            rf"\b(?:not|isn't|isnt|wasn't|wasnt)\s+{facts.risk_label}\b",
+            lowered,
+        )
+    )
+    label_ok = present_labels == {facts.risk_label} and not approved_label_negated
+    checks.append(
+        BriefingCheck(
+            "risk_label",
+            label_ok,
+            (
+                f"candidate uses approved label {facts.risk_label!r}"
+                if label_ok
+                else (
+                    f"expected unnegated label {facts.risk_label!r}; "
+                    f"found {sorted(present_labels)}"
+                )
+            ),
+        )
+    )
+
+    checks.append(_number_check(stripped, facts))
+    checks.append(_timestamp_check(stripped, facts))
+
+    matched_categories = {
+        category: sorted(
+            pattern
+            for pattern in patterns
+            if re.search(pattern, lowered, flags=re.IGNORECASE)
+        )
+        for category, patterns in _UNSUPPORTED_PATTERNS.items()
+    }
+    matched_categories = {
+        category: patterns
+        for category, patterns in matched_categories.items()
+        if patterns
+    }
+    checks.append(
+        BriefingCheck(
+            "unsupported_details",
+            not matched_categories,
+            (
+                "no unsupported cause, location, impact, or recommendation found"
+                if not matched_categories
+                else "unsupported detail categories: "
+                + ", ".join(sorted(matched_categories))
+            ),
+        )
+    )
+
+    rejection_reasons = tuple(check.detail for check in checks if not check.passed)
+    return BriefingValidation(
+        accepted=not rejection_reasons,
+        checks=tuple(checks),
+        rejection_reasons=rejection_reasons,
+    )
 
 
 def load_briefing_facts(

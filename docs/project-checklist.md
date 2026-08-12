@@ -346,7 +346,7 @@ The live NOAA poller is not on the critical path. Build it only after the replay
 
 ## Phase 4 — bounded AI and evaluation
 
-- [~] **AI-1 · Define briefing facts and deterministic fallback** · Initials: `NF` · PR: `#17`
+- [x] **AI-1 · Define briefing facts and deterministic fallback** · Initials: `NF` · PR: `#17`
   - Prerequisites: OUTPUT-1.
   - Branch suffix: `add-briefing-fallback`.
   - Create: `src/briefing.py` with structured input containing only latest Kp, rolling maximum, UTC window, and rule-based label.
@@ -360,7 +360,7 @@ The live NOAA poller is not on the critical path. Build it only after the replay
   - Ask only for a two-sentence briefing from supplied facts. Use an injected client so tests never make a live call.
   - Done when: one model response can be saved for evaluation, while missing credentials or request failure automatically uses the fallback.
 
-- [ ] **AI-3 · Implement automatic briefing checks** · Initials: `____` · PR: `____`
+- [~] **AI-3 · Implement automatic briefing checks** · Initials: `NF` · PR: `pending`
   - Prerequisites: AI-1.
   - Branch suffix: `validate-ai-briefing`.
   - Reject changed or invented Kp numbers, a mismatched label, unsupported causes/locations/recommendations, empty output, and more than two sentences.

@@ -12,6 +12,7 @@ from src.briefing import (
     deterministic_briefing,
     load_briefing_facts,
     main,
+    validate_briefing,
     write_briefing,
 )
 from src.processor import RollingKpProcessor
@@ -171,3 +172,120 @@ def test_cli_returns_nonzero_for_missing_alert_file(
 
     assert exit_code == 1
     assert "Briefing failed" in capsys.readouterr().out
+
+
+def representative_facts() -> BriefingFacts:
+    return BriefingFacts(
+        latest_kp=7,
+        rolling_15m_max_kp=7,
+        window_start_utc="2026-08-11T00:12:00Z",
+        window_end_utc="2026-08-11T00:27:00Z",
+        risk_label="elevated",
+    )
+
+
+def test_validator_accepts_correct_candidate_and_exposes_all_checks() -> None:
+    candidate = deterministic_briefing(representative_facts())
+
+    validation = validate_briefing(candidate, representative_facts())
+
+    assert validation.accepted is True
+    assert validation.rejection_reasons == ()
+    assert {check.name for check in validation.checks} == {
+        "nonempty",
+        "sentence_limit",
+        "risk_label",
+        "approved_numbers",
+        "approved_timestamps",
+        "unsupported_details",
+    }
+    assert all(check.passed for check in validation.checks)
+
+
+@pytest.mark.parametrize(
+    ("candidate", "failed_check", "reason_text"),
+    [
+        ("   ", "nonempty", "empty"),
+        (
+            "Kp is 7 and risk is elevated. Conditions remain elevated. "
+            "This is a third sentence.",
+            "sentence_limit",
+            "3 sentence",
+        ),
+        (
+            "The latest Kp is 8 and the risk label is elevated.",
+            "approved_numbers",
+            "8.0",
+        ),
+        (
+            "The latest Kp is 7 and the risk label is normal.",
+            "risk_label",
+            "normal",
+        ),
+        (
+            "The latest Kp is 7, but the risk is not elevated.",
+            "risk_label",
+            "unnegated",
+        ),
+        (
+            "The elevated alert affects 15 operators.",
+            "approved_numbers",
+            "15.0",
+        ),
+        (
+            "The elevated conditions were caused by a solar flare.",
+            "unsupported_details",
+            "cause",
+        ),
+        (
+            "Elevated risk is expected in high latitudes.",
+            "unsupported_details",
+            "location",
+        ),
+        (
+            "Elevated conditions will cause radio interference.",
+            "unsupported_details",
+            "impact",
+        ),
+        (
+            "Risk is elevated, so operators should switch frequencies.",
+            "unsupported_details",
+            "recommendation",
+        ),
+        (
+            "Risk was elevated at 2026-08-11T00:28:00Z.",
+            "approved_timestamps",
+            "00:28:00Z",
+        ),
+    ],
+)
+def test_validator_rejects_fixed_bad_candidates_with_explicit_reason(
+    candidate: str, failed_check: str, reason_text: str
+) -> None:
+    validation = validate_briefing(candidate, representative_facts())
+
+    failed = {check.name: check for check in validation.checks if not check.passed}
+    assert validation.accepted is False
+    assert failed_check in failed
+    assert reason_text in failed[failed_check].detail
+    assert failed[failed_check].detail in validation.rejection_reasons
+
+
+def test_validator_accepts_equivalent_kp_format_and_one_sentence() -> None:
+    candidate = (
+        "The elevated risk label reflects a latest Kp of 7.0 and a rolling "
+        "15-minute maximum of 7."
+    )
+
+    validation = validate_briefing(candidate, representative_facts())
+
+    assert validation.accepted is True
+
+
+def test_validator_does_not_repair_rejected_candidate() -> None:
+    candidate = "The latest Kp is 9 and the label is normal."
+
+    validation = validate_briefing(candidate, representative_facts())
+
+    assert validation.accepted is False
+    assert candidate == "The latest Kp is 9 and the label is normal."
