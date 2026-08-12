@@ -336,7 +336,7 @@ The live NOAA poller is not on the critical path. Build it only after the replay
   - Write one row per consumed canonical Kafka message so the duplicate can appear as `duplicate_skipped`.
   - Done when: row order/count and values match the fixture and the file opens as standard CSV with no extra index column.
 
-- [~] **PROCESS-3 · Connect Kafka consumer to processor and files** · Initials: `NF` · PR: `#16`
+- [x] **PROCESS-3 · Connect Kafka consumer to processor and files** · Initials: `NF` · PR: `#16`
   - Prerequisites: KAFKA-1, PROCESS-2, OUTPUT-1, OUTPUT-2.
   - Branch suffix: `connect-stream-processor`.
   - Create: `src/stream_processor.py`.
@@ -346,7 +346,7 @@ The live NOAA poller is not on the critical path. Build it only after the replay
 
 ## Phase 4 — bounded AI and evaluation
 
-- [ ] **AI-1 · Define briefing facts and deterministic fallback** · Initials: `____` · PR: `____`
+- [~] **AI-1 · Define briefing facts and deterministic fallback** · Initials: `NF` · PR: `#17`
   - Prerequisites: OUTPUT-1.
   - Branch suffix: `add-briefing-fallback`.
   - Create: `src/briefing.py` with structured input containing only latest Kp, rolling maximum, UTC window, and rule-based label.
