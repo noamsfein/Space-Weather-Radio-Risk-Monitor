@@ -61,13 +61,15 @@ Open the new `.env` file locally and use this template:
 # Private local credential. Never commit or share this value.
 OPENAI_API_KEY=paste_nikis_own_project_key_here
 
-# Keep blank until AI-2 documents the exact shared model identifier.
-OPENAI_MODEL=
+# Shared optional live-briefing model used by both partners.
+OPENAI_MODEL=gpt-5-nano
 ```
 
 Replace only `paste_nikis_own_project_key_here`. Do not add spaces around `=`.
 Do not put the real key into `.env.example`; that committed file must remain
-blank.
+free of credentials. The model name is not a secret and should stay
+`gpt-5-nano` unless the project documentation is deliberately updated for both
+partners.
 
 ## 5. Verify that Git ignores the secret
 
@@ -88,8 +90,9 @@ Noam before committing anything.
 
 ## 6. Verify the no-key project path now
 
-AI-2 will add the optional live call and its exact model later. Until then, you
-can confirm the existing deterministic briefing path without exposing the key:
+AI-2 will add the optional live call. The shared model is already selected as
+`gpt-5-nano`. Until AI-2 is merged, you can confirm the existing deterministic
+briefing path without exposing the key:
 
 ```bash
 env -u OPENAI_API_KEY python -m src.briefing
@@ -111,6 +114,7 @@ Niki should mark the checklist task complete only after all of these are true:
 - [ ] Created `space-weather-niki-local` inside that project.
 - [ ] Stored the key privately.
 - [ ] Created a local `.env` from `.env.example`.
+- [ ] Confirmed `.env` contains `OPENAI_MODEL=gpt-5-nano`.
 - [ ] Confirmed `.env` is ignored and absent from Git status.
 - [ ] Did not share or commit the key.
 - [ ] Messaged Noam that setup is complete.
