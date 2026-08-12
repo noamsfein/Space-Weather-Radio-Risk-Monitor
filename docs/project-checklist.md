@@ -402,11 +402,12 @@ The live NOAA poller is not on the critical path. Build it only after the replay
   - Done when: exact expected alert count and trigger timestamps match the fixture.
   - Audit 2026-08-12 (NN): every required case is covered in `tests/test_processor.py`; alert count and trigger timestamps are asserted against `data/fixtures/replay_expected.json`. Command: `pytest -q tests/test_processor.py` (13 passed).
 
-- [ ] **TEST-3 · Complete output and AI tests** · Initials: `____` · PR: `____`
+- [~] **TEST-3 · Complete output and AI tests** · Initials: `NN` · PR: `#26`
   - Prerequisites: OUTPUT-2, AI-4.
   - Branch suffix: `complete-output-ai-tests`.
   - Test JSON/CSV shape, fact agreement, accepted/rejected AI cases, provider failure, and fallback without credentials.
   - Done when: corrupting an output fact, CSV header/count, or candidate response causes a clear focused failure without a live API call.
+  - Audit 2026-08-12 (NN): every required case is covered across `tests/test_alert_output.py`, `tests/test_metrics_output.py`, `tests/test_briefing.py`, and `tests/test_evaluate.py`; all AI cases use injected fake clients, and no test makes a live call. Command: `pytest -q tests/test_alert_output.py tests/test_metrics_output.py tests/test_briefing.py tests/test_evaluate.py` (52 passed).
 
 - [ ] **DEMO-1 · Build `run_demo.sh`** · Initials: `____` · PR: `____`
   - Prerequisites: INGEST-1, PROCESS-3, AI-4.
