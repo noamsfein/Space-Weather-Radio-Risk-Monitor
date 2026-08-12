@@ -95,6 +95,7 @@ Before submission, add actual development uses to this log rather than making a 
 | 2026-08-04 | Codex and ChatGPT | Compared ideas and drafted/reviewed proposal wording | Selected NOAA Kp topic, reduced scope, fixed alert semantics and AI boundary | Checked proposal template, proposal rubric, source, and final PDF |
 | 2026-08-11 | Codex | Drafted README, source notes, AI plan, and incremental checklist | Team must review assignments, commands, schema, and deadlines before implementation | Compared with final-project requirements, written rubric, presentation rubric, proposal, and NOAA sample |
 | 2026-08-12 | Codex | Scaffolded the repository and configured the Python environment | Noam chose local Docker Kafka and kept the dependency set limited to the planned implementation | Installed from scratch with Python 3.11 and ran dependency smoke tests without secrets |
+| 2026-08-12 | Codex | Configured the local Kafka broker | Noam chose Docker over Confluent Cloud; the project uses one official Kafka image and no extra services | Validated Compose, broker health, topic access, message round-trip, restart, and cleanup |
 | YYYY-MM-DD | Tool/model | Describe the specific task | Describe the human decision or edit | Name the test, review, or evidence |
 
 ## Known limitations
