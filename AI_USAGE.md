@@ -54,7 +54,7 @@ The exact checks and their limitations must be documented in the final report. A
 
 ## Evaluation set
 
-The final `evaluation/evaluation.json` should include at least these fixed cases:
+The committed `evaluation/evaluation.json` includes these fixed cases:
 
 | Case | Candidate behavior | Expected decision |
 |---|---|---|
@@ -65,7 +65,12 @@ The final `evaluation/evaluation.json` should include at least these fixed cases
 | Too long | Exceeds two sentences | Reject |
 | API unavailable | No model response | Use deterministic fallback |
 
-Each saved case must include the model input, candidate output, expected decision, actual decision, check results, and whether expected matched actual. The report should state the number and percentage of cases that passed their expected outcome.
+Each saved case includes the model input, candidate output, expected decision,
+actual decision, check results, fallback status, and whether expected matched
+actual. These strings are project-authored boundary tests and are not presented
+as fresh live-model responses. Run `python -m src.evaluate` to regenerate the
+artifact without Kafka, an API key, or network access. The command exits nonzero
+if an expected result does not match.
 
 ## Fallback
 
@@ -107,6 +112,7 @@ Before submission, add actual development uses to this log rather than making a 
 | 2026-08-12 | Codex | Connected Kafka consumption to processing and output writers | Noam retained a finite nine-event run, bounded idle timeout, malformed-message skip/report behavior, and deterministic local outputs | Tested lifecycle and failure paths with fakes, then published and consumed the full replay through Docker Kafka and compared both generated artifacts with the committed oracle |
 | 2026-08-12 | Codex | Implemented structured briefing facts and deterministic fallback | Noam retained a five-field wording boundary, the most recent alert as the briefing subject, and a no-alert form that invents no values | Tested exact two-sentence outputs, field provenance from `alert.json`, strict schema rejection, no-key operation, and atomic-write failure cleanup |
 | 2026-08-12 | Codex | Implemented deterministic briefing validation | Noam retained explicit checks and rejection reasons instead of automatic repair, plus conservative rejection of unsupported causes, locations, impacts, and recommendations | Tested fixed accepted, wrong-number, wrong-label, unsupported-detail, too-long, empty, and wrong-timestamp candidates without a model or network call |
+| 2026-08-12 | Codex | Implemented deterministic alert and briefing evaluation evidence | Noam retained fixed project-authored cases, explicit provenance, expected-versus-actual decisions, and a no-network failure simulation | Regenerated `evaluation.json`, matched replay alerts to the committed oracle, verified all six AI cases, and proved a deliberately wrong expectation makes the command fail |
 | YYYY-MM-DD | Tool/model | Describe the specific task | Describe the human decision or edit | Name the test, review, or evidence |
 
 ## Known limitations

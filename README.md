@@ -304,6 +304,19 @@ output, and no-alert input all use the deterministic fallback automatically.
 The optional candidate file preserves the raw response for evaluation; it is
 never treated as the accepted briefing unless validation passes.
 
+Generate the required deterministic alert and AI evaluation evidence with:
+
+```bash
+python -m src.evaluate
+```
+
+This command does not load `.env`, contact OpenAI, or require Kafka. It replays
+the committed canonical events in memory, compares alert counts and crossings
+with `data/fixtures/replay_expected.json`, evaluates six fixed briefing cases,
+and writes `evaluation/evaluation.json`. The cases are clearly identified as
+project-authored test candidates, not fresh live-model responses. The command
+returns nonzero if any expected alert or briefing decision does not match.
+
 ## Team ownership
 
 | Area | Lead | Cross-review |
