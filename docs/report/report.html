@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Space Weather Radio-Risk Monitor — Final Report</title>
+<style>
+  @page { size: letter; margin: 22mm 20mm; }
+  html { -webkit-print-color-adjust: exact; }
+  body {
+    font-family: Georgia, "Times New Roman", serif;
+    font-size: 10.5pt; line-height: 1.45; color: #1a1a1a;
+    max-width: 46em; margin: 0 auto;
+  }
+  h1 { font-size: 17pt; margin: 0 0 2pt; }
+  .subtitle { color: #444; margin: 0 0 14pt; font-size: 10.5pt; }
+  h2 { font-size: 13pt; margin: 16pt 0 6pt; border-bottom: 1px solid #999; padding-bottom: 2pt; }
+  h3 { font-size: 11pt; margin: 10pt 0 4pt; }
+  p, ul, ol { margin: 5pt 0; }
+  li { margin: 2pt 0; }
+  code, pre { font-family: "SF Mono", Menlo, Consolas, monospace; }
+  code { font-size: 9pt; background: #f2f2f2; padding: 0 2px; }
+  pre {
+    font-size: 8.4pt; line-height: 1.35; background: #f6f6f6;
+    border: 1px solid #ddd; padding: 6pt 8pt; overflow-x: auto;
+    white-space: pre; page-break-inside: avoid;
+  }
+  table { border-collapse: collapse; width: 100%; max-width: 100%; table-layout: fixed; margin: 6pt 0; font-size: 8.5pt; page-break-inside: avoid; }
+  th, td { border: 1px solid #bbb; padding: 3pt 4pt; text-align: left; vertical-align: top; overflow-wrap: break-word; }
+  table.metrics td:first-child, table.metrics th:first-child { width: 11.5em; }
+  th { background: #efefef; }
+  .figcap { font-size: 9pt; color: #555; margin: 2pt 0 10pt; }
+  section { page-break-inside: auto; }
+</style>
+</head>
+<body>
+
+<h1>Space Weather Radio-Risk Monitor</h1>
+<p class="subtitle">
+MSDS 682 Data Stream Processing, Summer 2026 — Final Report<br>
+Noam Fein (<code>nsfein</code>) and Niki Naderzad (<code>nnaderzad</code>) · August 2026<br>
+Repository: <code>github.com/noamsfein/Space-Weather-Radio-Risk-Monitor</code>
+</p>
+
+<section>
+<h2>1. Problem and useful result</h2>
+<p>
+Amateur-radio operators depend on high-frequency (HF) propagation, which can degrade during
+geomagnetic storms. NOAA publishes an estimated planetary K-index (Kp) roughly every minute, but an
+operator does not want to watch a feed; they want one machine-readable signal when conditions cross
+into storm territory. Kp&nbsp;6 corresponds to a G2 geomagnetic storm, a level at which NOAA notes HF
+propagation can fade at higher latitudes.
+</p>
+<p>
+The product is deliberately narrow: one data source, one Kafka topic (<code>kp_observations</code>),
+one canonical event contract, a rolling 15-minute event-time maximum, and one deterministic alert
+rule — <em>emit an alert when the rolling maximum crosses from below 6 to at-or-above 6, and rearm
+only after it falls back below 6</em>. It does not forecast, does not model a specific station or
+location, and never lets AI decide anything about the alert.
+</p>
+<p>
+The observable result: replaying the project's labeled nine-event fixture through a real local Kafka
+broker produces exactly two alerts in <code>outputs/alert.json</code>. The first is:
+</p>
+<pre>{
+  "alert_id": "kp-alert-20260811T001000Z",
+  "triggered_at": "2026-08-11T00:10:00Z",
+  "latest_kp": 6.3,
+  "rolling_15m_max_kp": 6.3,
+  "window_start_utc": "2026-08-10T23:55:00Z",
+  "window_end_utc": "2026-08-11T00:10:00Z",
+  "window_minutes": 15.0,
+  "threshold_kp": 6.0,
+  "risk_label": "elevated",
+  "source": "synthetic://kp-threshold-fixture"
+}</pre>
+<p class="figcap">Figure 1. First alert from the verified demo run. Every field is rule-derived; there is no AI-derived field.</p>
+</section>
+
+<section>
+<h2>2. Data source and event contract</h2>
+<p>
+The source is the NOAA/NWS Space Weather Prediction Center public JSON service
+<code>https://services.swpc.noaa.gov/json/planetary_k_index_1m.json</code> — public HTTPS, no key,
+no personal data, public-domain NWS terms with attribution. Its documented limitations shaped the
+design: the values are <em>estimated and preliminary</em> (not independent one-minute measurements),
+they may be revised or missing, planetary Kp is global rather than location-specific, and the feed
+is often quiet. Dated source checks on both August 11 and August 12, 2026 found 358 well-formed,
+unique, ordered records at one-minute cadence — and a maximum Kp under 3.5. A quiet live feed cannot
+demonstrate a Kp 6 alert, which is why the required review path replays a committed, clearly labeled
+synthetic threshold fixture instead of live data.
+</p>
+<h3>Raw-to-canonical mapping and validation</h3>
+<p>
+A raw record has four fields (<code>time_tag</code>, <code>kp_index</code>, <code>estimated_kp</code>,
+<code>kp</code>). Normalization keeps <code>time_tag</code>, renames <code>estimated_kp</code> to
+<code>kp_value</code>, and adds provenance and ingestion time. Every event — cached NOAA or replay —
+must pass the same Pydantic contract (<code>src/contract.py</code>): timestamps parse and normalize
+to UTC (NOAA omits the <code>Z</code>; the documented source convention is UTC), <code>kp_value</code>
+is numeric, finite, and in [0,&nbsp;9], and <code>source</code> must be either the NOAA endpoint or the
+synthetic fixture identifier — anything else is rejected, so synthetic data can never masquerade as
+NOAA history. The model is frozen and forbids extra fields.
+</p>
+<pre>{
+  "time_tag": "2026-08-11T00:10:00Z",
+  "kp_value": 6.3,
+  "source": "synthetic://kp-threshold-fixture",
+  "ingested_at": "2026-08-11T00:10:05Z"
+}</pre>
+<p class="figcap">Figure 2. The representative event (<code>data/fixtures/representative_event.json</code>) — the first alert-producing record of the replay. The same four field names appear in code, tests, documentation, and slides.</p>
+<p>
+Kafka topic: <code>kp_observations</code>, one partition. Message key: the constant
+<code>planetary_kp</code>, because there is exactly one global planetary sequence — a constant key
+keeps it ordered even if the topic ever gains partitions. Deduplication identity is
+<code>time_tag</code>. The replay fixture deliberately contains one duplicate timestamp so the demo
+proves deduplication rather than assuming it.
+</p>
+</section>
+
+<section>
+<h2>3. Architecture and implementation</h2>
+<pre>REQUIRED REPLAY PATH (no network, no API key)
+
+  data/sample_or_replay_data/kp_replay.jsonl     [labeled synthetic fixture]
+                      |
+                      v
+  src/replay_producer.py — validate every record (src/contract.py),
+  reject disorder, publish in event-time order
+                      |
+                      v
+        Kafka topic: kp_observations  (1 partition, local Docker broker)
+        message key: planetary_kp
+                      |
+                      v
+  src/stream_processor.py — finite consumer
+        src/processor.py: deduplicate by time_tag
+        + rolling 15-minute event-time maximum (inclusive)
+        + alert on below-6 to at-or-above-6 crossing, rearm below 6
+                      |
+             +--------+---------+
+             v                  v
+   outputs/alert.json    outputs/metrics.csv
+             |
+             v
+  src/briefing.py — deterministic two-sentence template
+  from the five approved alert facts
+             |
+             v
+   outputs/briefing.txt
+             |
+             v
+  src/evaluate.py — expected-vs-actual alerts + six fixed
+  briefing acceptance cases
+             |
+             v
+   evaluation/evaluation.json
+
+OPTIONAL, OFF THE REQUIRED PATH
+  - live OpenAI briefing (--use-live-ai): private key in .env; the candidate
+    must pass the same fact checks or the deterministic fallback is used
+  - live NOAA poller: deliberately omitted; the committed NOAA sample and
+    tested normalization prove the raw-to-canonical mapping instead</pre>
+<p class="figcap">Figure 3. Implemented architecture. Every box maps to a submitted module or artifact.</p>
+
+<h3>One real replay example</h3>
+<p>
+The table below is the actual <code>outputs/metrics.csv</code> from the verified demo run — one row
+per consumed Kafka message. It shows the whole story: the first crossing at 00:10; the duplicate of
+that message skipped without re-alerting; still-elevated windows (rolling max 6.3) producing no
+duplicate alert while new values are below 6; the window decaying (5.5, then below 6 at 00:26,
+which rearms the alert); and a second crossing at 00:27.
+</p>
+<table class="metrics">
+<tr><th>time_tag</th><th>kp_value</th><th>rolling_15m_max_kp</th><th>risk_label</th><th>alert_emitted</th><th>processing_status</th></tr>
+<tr><td>2026-08-11T00:00:00Z</td><td>4.0</td><td>4.0</td><td>normal</td><td>false</td><td>accepted</td></tr>
+<tr><td>2026-08-11T00:05:00Z</td><td>5.0</td><td>5.0</td><td>normal</td><td>false</td><td>accepted</td></tr>
+<tr><td>2026-08-11T00:10:00Z</td><td>6.3</td><td>6.3</td><td>elevated</td><td><b>true</b></td><td>accepted</td></tr>
+<tr><td>2026-08-11T00:10:00Z</td><td>6.3</td><td>6.3</td><td>elevated</td><td>false</td><td><b>duplicate_skipped</b></td></tr>
+<tr><td>2026-08-11T00:20:00Z</td><td>5.5</td><td>6.3</td><td>elevated</td><td>false</td><td>accepted</td></tr>
+<tr><td>2026-08-11T00:25:00Z</td><td>5.2</td><td>6.3</td><td>elevated</td><td>false</td><td>accepted</td></tr>
+<tr><td>2026-08-11T00:26:00Z</td><td>5.0</td><td>5.5</td><td>normal</td><td>false</td><td>accepted</td></tr>
+<tr><td>2026-08-11T00:27:00Z</td><td>7.0</td><td>7.0</td><td>elevated</td><td><b>true</b></td><td>accepted</td></tr>
+<tr><td>2026-08-11T00:30:00Z</td><td>6.7</td><td>7.0</td><td>elevated</td><td>false</td><td>accepted</td></tr>
+</table>
+<p class="figcap">Figure 4. Actual metrics rows from the demo run; they match the committed expected-results oracle exactly.</p>
+
+<h3>Rolling window and crossing logic</h3>
+<p>
+Processing is pure Python, independent of Kafka (<code>src/processor.py</code>), which makes the
+logic directly unit-testable. The window is event-time based and inclusive: an observation exactly
+15 minutes old is still in the window; one second older is not. Duplicate <code>time_tag</code>s and
+late (out-of-order) events are counted and skipped without touching window state — a skipped record
+can never create, suppress, or rearm an alert. The alert is edge-triggered on the rolling maximum
+with hysteresis-by-rearm: sustained elevation emits nothing new until the maximum has fallen below 6.
+</p>
+
+<h3>Why one topic on one local Kafka broker</h3>
+<p>
+The planetary Kp series is a single global sequence, so one topic with one partition and a constant
+key is the design that preserves order without ceremony. Kafka still earns its place: it decouples
+the validated producer from the consumer, gives replayable offsets, and makes duplicate handling
+observable. A local Docker broker (official <code>apache/kafka</code> image, KRaft mode) keeps the
+demo reproducible for any reviewer; the demo script recreates broker state on every run precisely so
+no run can silently reuse stale topics or consumer offsets. The producer is idempotent with
+<code>acks=all</code>; the consumer uses a fresh group id per run, a bounded idle timeout, and skips
+malformed messages with a visible warning instead of crashing.
+</p>
+</section>
+
+<section>
+<h2>4. Evidence, bounded AI, and reproducibility</h2>
+<h3>Validation and evaluation results</h3>
+<ul>
+  <li><b>Automated tests:</b> 141 passed (contract, processor, outputs, briefing, evaluation, demo
+  fixtures), plus 3 opt-in Kafka integration tests, all passing against a clean Docker broker.</li>
+  <li><b>End-to-end acceptance:</b> <code>./run_demo.sh</code> verifies the generated artifacts
+  field-by-field against the committed oracle <code>data/fixtures/replay_expected.json</code> —
+  9 messages consumed, 8 unique, 1 duplicate skipped, exactly 2 alerts at the labeled timestamps —
+  then runs the full test suite; three consecutive runs passed identically, and a deliberately broken
+  run exits nonzero.</li>
+  <li><b>Evaluation evidence:</b> <code>python -m src.evaluate</code> regenerates
+  <code>evaluation/evaluation.json</code> deterministically (byte-identical across runs, no network,
+  no key): 7/7 assertions — the replay alert comparison plus six fixed AI-briefing cases.</li>
+</ul>
+
+<h3>Bounded AI and its verification</h3>
+<p>
+The language model (OpenAI <code>gpt-5-nano</code>, optional) sees only five already-calculated
+facts — latest Kp, rolling maximum, UTC window start/end, and the rule-based label — and may only
+phrase them as a two-sentence briefing. It cannot trigger, suppress, or relabel an alert. An
+automatic validator rejects any candidate containing a Kp number not in the input, a mismatched
+label, unsupported causes/locations/recommendations, more than two sentences, or empty output, and
+records the explicit rejection reason; a rejected candidate is never silently repaired. The six
+committed evaluation cases (correct, wrong number, wrong label, unsupported detail, too long, API
+unavailable) all produce their expected decisions. With no key, a failed request, or a rejected
+response, a deterministic two-sentence template built from the same facts writes
+<code>briefing.txt</code> — the fallback is the required path, not an error state. Full disclosure
+of runtime and development AI use is in <code>AI_USAGE.md</code>.
+</p>
+
+<h3>Exact review path</h3>
+<pre>python3.11 -m venv .venv
+source .venv/bin/activate
+pip install -r requirements.txt
+./run_demo.sh          # requires Docker Desktop running; no network beyond
+                       # localhost, no OpenAI key</pre>
+<p>
+Expected artifacts: <code>outputs/alert.json</code> (two alerts), <code>outputs/metrics.csv</code>
+(nine rows), <code>outputs/briefing.txt</code> (two sentences), and
+<code>evaluation/evaluation.json</code> (7/7). The same command passes with
+<code>OPENAI_API_KEY</code> unset, with the briefing explicitly reported as the deterministic
+fallback. Cleanup: <code>docker compose down -v</code>.
+</p>
+
+<h3>Team contributions</h3>
+<table>
+<tr><th>Area</th><th>Lead</th><th>Cross-review</th></tr>
+<tr><td>Event contract, Kafka I/O, replay producer, processor and crossing rule, alert/metrics writers, stream consumer, briefing + validator, evaluation harness</td><td>Noam</td><td>Niki</td></tr>
+<tr><td>Test-coverage audits and contract edge-case tests, one-command demo script (<code>run_demo.sh</code>), end-to-end and offline acceptance runs, README/data-source finalization, architecture chart, report and presentation drafts</td><td>Niki</td><td>Noam</td></tr>
+<tr><td>Fixture design, source verification, checklist and workflow</td><td>Shared</td><td>Both</td></tr>
+</table>
+<p>
+All work merged through reviewed pull requests on task-scoped branches; both partners ran the full
+demo independently and can explain every stage.
+</p>
+
+<h3>Limitations and next step</h3>
+<p>
+<b>Limitations.</b> The alert reports a recent estimated global Kp condition; it is not a forecast
+and not a station-level propagation model. NOAA's one-minute values are preliminary and revisable.
+The 15-minute window and Kp 6 threshold are a course-scale streaming rule, not an official alerting
+algorithm. The AI validator checks facts, sentence count, and banned unsupported details — it cannot
+prove a briefing is well-phrased, and a candidate could avoid banned terms yet still mislead, which
+is why rejection defaults to the deterministic fallback. The demo replays a labeled synthetic
+fixture because quiet live data cannot demonstrate the threshold crossing.
+</p>
+<p>
+<b>One realistic next step.</b> Add the deferred 60-second live NOAA poller
+(<code>src/live_poller.py</code>). The contract, topic, consumer, and outputs need no changes —
+normalization from raw NOAA records is already implemented and tested — so the work is confined to
+scheduled fetching, unseen-<code>time_tag</code> filtering, and failure logging, with the cached
+replay kept as the reviewer path.
+</p>
+</section>
+
+</body>
+</html>
