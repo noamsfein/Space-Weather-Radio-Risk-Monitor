@@ -274,6 +274,17 @@ It may not:
 
 Automatic checks reject unsupported output. Saved accepted and rejected examples allow the reviewer to inspect the AI element without an API key. If the API is unavailable or a response fails checks, a deterministic template produces `briefing.txt`. See [AI_USAGE.md](AI_USAGE.md).
 
+The deterministic fallback is already runnable after `outputs/alert.json` exists:
+
+```bash
+python -m src.briefing
+```
+
+It reads only the latest alert's approved facts and writes
+`outputs/briefing.txt`. If the alert list is empty, it writes a two-sentence
+no-alert briefing without inventing Kp values or timestamps. This command does
+not read `OPENAI_API_KEY` or make a network request.
+
 ## Team ownership
 
 | Area | Lead | Cross-review |
