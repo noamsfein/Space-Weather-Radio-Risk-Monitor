@@ -407,7 +407,7 @@ The live NOAA poller is not on the critical path. Build it only after the replay
   - Test JSON/CSV shape, fact agreement, accepted/rejected AI cases, provider failure, and fallback without credentials.
   - Done when: corrupting an output fact, CSV header/count, or candidate response causes a clear focused failure without a live API call.
 
-- [ ] **DEMO-1 · Build `run_demo.sh`** · Initials: `____` · PR: `____`
+- [~] **DEMO-1 · Build `run_demo.sh`** · Initials: `NN` · PR: `pending`
   - Prerequisites: INGEST-1, PROCESS-3, AI-4.
   - Branch suffix: `add-one-command-demo`.
   - Start and wait for Kafka, clear only generated demo artifacts, run the finite consumer and replay in a controlled order, wait for completion, create all four artifacts, and run acceptance tests.
