@@ -72,16 +72,18 @@ Access details, field definitions, limitations, caching, and replay rules are in
 
 ## Event contract
 
-Live and replay inputs must produce the same canonical JSON event:
+Live and replay inputs must produce the same canonical JSON event. The project's representative event is the first alert-producing record from the clearly labeled synthetic replay:
 
 ```json
 {
-  "time_tag": "2026-08-11T15:24:00Z",
-  "kp_value": 1.0,
-  "source": "https://services.swpc.noaa.gov/json/planetary_k_index_1m.json",
-  "ingested_at": "2026-08-11T15:25:03Z"
+  "time_tag": "2026-08-11T00:10:00Z",
+  "kp_value": 6.3,
+  "source": "synthetic://kp-threshold-fixture",
+  "ingested_at": "2026-08-11T00:10:05Z"
 }
 ```
+
+The authoritative copy is [`data/fixtures/representative_event.json`](data/fixtures/representative_event.json). It is published to `kp_observations` with key `planetary_kp`; later processing should calculate a rolling maximum of 6.3 and emit the first alert. The source field makes clear that this event is a project-created demonstration fixture, not observed NOAA history.
 
 Validation rules:
 
