@@ -360,7 +360,7 @@ The live NOAA poller is not on the critical path. Build it only after the replay
   - Implement the two-sentence deterministic template first, including a no-alert form.
   - Done when: `briefing.txt` is produced with no API key and every number/label comes from `alert.json`.
 
-- [~] **AI-2 · Add optional model call** · Initials: `NF` · PR: `TBD`
+- [~] **AI-2 · Add optional model call** · Initials: `NF` · PR: `#21`
   - Prerequisites: AI-1.
   - Branch suffix: `add-optional-ai-briefing`.
   - Read an optional API key from the environment; never commit it. Keep provider/model, timeout, and prompt visible in configuration or code.
