@@ -401,7 +401,7 @@ The live NOAA poller is not on the critical path. Build it only after the replay
   - Test the exact 15-minute boundary, direct jump above 6, still-elevated observations, duplicate timestamp, window expiry, rearm, and second crossing.
   - Done when: exact expected alert count and trigger timestamps match the fixture.
 
-- [~] **TEST-3 · Complete output and AI tests** · Initials: `NN` · PR: `pending`
+- [~] **TEST-3 · Complete output and AI tests** · Initials: `NN` · PR: `#26`
   - Prerequisites: OUTPUT-2, AI-4.
   - Branch suffix: `complete-output-ai-tests`.
   - Test JSON/CSV shape, fact agreement, accepted/rejected AI cases, provider failure, and fallback without credentials.
