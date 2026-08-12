@@ -287,7 +287,7 @@ The live NOAA poller is not on the critical path. Build it only after the replay
   - Do: produce one canonical test event to `kp_observations` with key `planetary_kp`, then consume it.
   - Done when: the consumed key and JSON value match what was produced and the result is reproducible after a clean broker restart.
 
-- [ ] **INGEST-1 · Implement replay producer** · Initials: `____` · PR: `____`
+- [~] **INGEST-1 · Implement replay producer** · Initials: `NF` · PR: `#10`
   - Prerequisites: CONTRACT-1, DATA-2, KAFKA-1.
   - Branch suffix: `add-replay-producer`.
   - Create: `src/replay_producer.py`.
