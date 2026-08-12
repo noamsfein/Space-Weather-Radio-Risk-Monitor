@@ -224,7 +224,7 @@ The live NOAA poller is not on the critical path. Build it only after the replay
   - Add: `.gitkeep` only where an empty required directory must remain tracked.
   - Done when: the layout matches the README and every required final-package category has a clear destination.
 
-- [~] **P0-3 · Pin the environment** · Initials: `NF` · PR: `pending`
+- [~] **P0-3 · Pin the environment** · Initials: `NF` · PR: `#4`
   - Prerequisites: P0-1.
   - Branch suffix: `configure-python-environment`.
   - Create: `requirements.txt`, `.env.example`, `.gitignore`, and pytest configuration.
