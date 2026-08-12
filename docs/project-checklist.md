@@ -272,7 +272,7 @@ The live NOAA poller is not on the critical path. Build it only after the replay
   - Tests: accept representative raw and replay records; reject missing fields, malformed timestamps, nonnumeric Kp, and out-of-range values.
   - Done when: `pytest -q tests/test_contract.py` passes and the representative event serializes to the documented four-field contract.
 
-- [~] **CONTRACT-2 · Freeze a representative event** · Initials: `NF` · PR: `pending`
+- [~] **CONTRACT-2 · Freeze a representative event** · Initials: `NF` · PR: `#7`
   - Prerequisites: CONTRACT-1.
   - Branch suffix: `document-event-contract`.
   - Save: one representative canonical JSON record for the README, report, and presentation.
