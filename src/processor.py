@@ -12,6 +12,7 @@ from src.contract import KpEvent
 
 WINDOW_MINUTES = 15
 WINDOW_DURATION = timedelta(minutes=WINDOW_MINUTES)
+RISK_THRESHOLD_KP = 6.0
 
 
 class ProcessingStatus(StrEnum):
@@ -20,10 +21,17 @@ class ProcessingStatus(StrEnum):
     LATE_EVENT_SKIPPED = "late_event_skipped"
 
 
+class RiskLabel(StrEnum):
+    NORMAL = "normal"
+    ELEVATED = "elevated"
+
+
 @dataclass(frozen=True)
 class ProcessingResult:
     event: KpEvent
     rolling_15m_max_kp: float | None
+    risk_label: RiskLabel
+    alert_emitted: bool
     status: ProcessingStatus
 
     @property
@@ -49,6 +57,8 @@ class RollingKpProcessor:
         self._accepted_count = 0
         self._duplicate_count = 0
         self._late_count = 0
+        self._alert_armed = True
+        self._alerts_emitted = 0
 
     @property
     def window(self) -> timedelta:
@@ -84,24 +94,40 @@ class RollingKpProcessor:
     def late_count(self) -> int:
         return self._late_count
 
+    @property
+    def alert_armed(self) -> bool:
+        return self._alert_armed
+
+    @property
+    def alerts_emitted(self) -> int:
+        return self._alerts_emitted
+
+    def _risk_label(self) -> RiskLabel:
+        if self.rolling_max is not None and self.rolling_max >= RISK_THRESHOLD_KP:
+            return RiskLabel.ELEVATED
+        return RiskLabel.NORMAL
+
+    def _skipped_result(
+        self, event: KpEvent, status: ProcessingStatus
+    ) -> ProcessingResult:
+        return ProcessingResult(
+            event=event,
+            rolling_15m_max_kp=self.rolling_max,
+            risk_label=self._risk_label(),
+            alert_emitted=False,
+            status=status,
+        )
+
     def process(self, event: KpEvent) -> ProcessingResult:
         self._messages_seen += 1
 
         if event.time_tag in self._seen_time_tags:
             self._duplicate_count += 1
-            return ProcessingResult(
-                event=event,
-                rolling_15m_max_kp=self.rolling_max,
-                status=ProcessingStatus.DUPLICATE_SKIPPED,
-            )
+            return self._skipped_result(event, ProcessingStatus.DUPLICATE_SKIPPED)
 
         if self._latest_time_tag is not None and event.time_tag < self._latest_time_tag:
             self._late_count += 1
-            return ProcessingResult(
-                event=event,
-                rolling_15m_max_kp=self.rolling_max,
-                status=ProcessingStatus.LATE_EVENT_SKIPPED,
-            )
+            return self._skipped_result(event, ProcessingStatus.LATE_EVENT_SKIPPED)
 
         self._events.append(event)
         self._seen_time_tags.add(event.time_tag)
@@ -112,8 +138,18 @@ class RollingKpProcessor:
         while self._events and self._events[0].time_tag < cutoff:
             self._events.popleft()
 
+        risk_label = self._risk_label()
+        alert_emitted = risk_label is RiskLabel.ELEVATED and self._alert_armed
+        if alert_emitted:
+            self._alert_armed = False
+            self._alerts_emitted += 1
+        elif risk_label is RiskLabel.NORMAL:
+            self._alert_armed = True
+
         return ProcessingResult(
             event=event,
             rolling_15m_max_kp=self.rolling_max,
+            risk_label=risk_label,
+            alert_emitted=alert_emitted,
             status=ProcessingStatus.ACCEPTED,
         )
