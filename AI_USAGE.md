@@ -100,6 +100,7 @@ Before submission, add actual development uses to this log rather than making a 
 | 2026-08-12 | Codex | Froze the representative Kafka event | Noam selected the first synthetic Kp 6.3 crossing because it connects the event contract to the demonstrated alert | Tested the saved event against `KpEvent`, the replay source row, and the README copy |
 | 2026-08-12 | Codex | Implemented reusable Kafka I/O | Noam retained one local broker, topic, partition, and constant key for the ordered global stream | Ran unit failure cases and a real Docker produce/consume round-trip before and after a clean broker restart |
 | 2026-08-12 | Codex | Implemented deterministic replay ingestion | Noam kept the nine-event fixture as the required demo and preserved its deliberate duplicate | Tested full-file validation, ordering, delay, delivery failure, and exact nine-message order through real Kafka |
+| 2026-08-12 | Codex | Implemented rolling event-time processing | Noam retained an inclusive 15-minute window and time-tag deduplication; late records are skipped rather than silently rewriting ordered state | Matched every committed expected maximum/status and tested boundary, expiry, duplicate, late-event, and state-invariance cases |
 | YYYY-MM-DD | Tool/model | Describe the specific task | Describe the human decision or edit | Name the test, review, or evidence |
 
 ## Known limitations
