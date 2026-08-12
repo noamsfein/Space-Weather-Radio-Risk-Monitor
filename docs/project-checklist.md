@@ -322,7 +322,7 @@ The live NOAA poller is not on the critical path. Build it only after the replay
   - Tests: direct jump from 5 to 7, sustained elevation, duplicate high value, window expiry, and a second crossing.
   - Done when: the full fixture produces exactly the labeled first and second alerts, with no duplicate alert while the window remains elevated.
 
-- [~] **OUTPUT-1 · Write `alert.json`** · Initials: `NF` · PR: `pending`
+- [~] **OUTPUT-1 · Write `alert.json`** · Initials: `NF` · PR: `#13`
   - Prerequisites: PROCESS-2.
   - Branch suffix: `write-alert-output`.
   - Create: output-writing logic that includes event time, latest Kp, rolling maximum, UTC window, threshold, rule-based label, source, alert ID, and run counts.
