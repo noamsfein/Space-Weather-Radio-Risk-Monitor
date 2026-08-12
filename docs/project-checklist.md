@@ -307,7 +307,7 @@ The live NOAA poller is not on the critical path. Build it only after the replay
 
 ## Phase 3 — stream processing and useful outputs
 
-- [~] **PROCESS-1 · Implement deduplication and rolling window** · Initials: `NF` · PR: `#11`
+- [x] **PROCESS-1 · Implement deduplication and rolling window** · Initials: `NF` · PR: `#11`
   - Prerequisites: CONTRACT-1, DATA-2.
   - Branch suffix: `add-rolling-kp-window`.
   - Create: `src/processor.py` with pure processing logic independent of Kafka.
@@ -315,7 +315,7 @@ The live NOAA poller is not on the critical path. Build it only after the replay
   - Tests: normal window updates, event exactly 15 minutes old, expired events, duplicate timestamp, and expected maximum at each fixture timestamp.
   - Done when: the focused processor tests pass and a duplicate cannot create another alert.
 
-- [ ] **PROCESS-2 · Implement crossing state** · Initials: `____` · PR: `____`
+- [~] **PROCESS-2 · Implement crossing state** · Initials: `NF` · PR: `pending`
   - Prerequisites: PROCESS-1.
   - Branch suffix: `add-alert-crossing-state`.
   - Emit only when the prior rolling maximum is below 6 and the current maximum is at least 6. Rearm only after the maximum falls below 6.
