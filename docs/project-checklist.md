@@ -232,7 +232,7 @@ The live NOAA poller is not on the critical path. Build it only after the replay
   - Ignore: `.env`, `.venv*`, `__pycache__/`, `.pytest_cache/`, `.DS_Store`, generated Kafka state, and local logs.
   - Done when: Python 3.11 installs the requirements in a fresh virtual environment and no secret is required for replay or test collection.
 
-- [~] **P0-4 · Add local Kafka Compose configuration** · Initials: `NF` · PR: `#5`
+- [x] **P0-4 · Add local Kafka Compose configuration** · Initials: `NF` · PR: `#5`
   - Prerequisites: P0-1.
   - Branch suffix: `configure-local-kafka`.
   - Create: `docker-compose.yml` with one local Kafka broker and a health/readiness check.
@@ -264,7 +264,7 @@ The live NOAA poller is not on the critical path. Build it only after the replay
   - The valid fixture must include below-threshold values, a first crossing, still-elevated non-duplicates, a return below threshold after window expiry, a second crossing, and one duplicate timestamp.
   - Done when: every JSON/JSONL file parses, expected rolling maxima and alert timestamps are recorded, and the synthetic source identifier is distinct from the NOAA endpoint.
 
-- [ ] **CONTRACT-1 · Implement the canonical Pydantic event** · Initials: `____` · PR: `____`
+- [~] **CONTRACT-1 · Implement the canonical Pydantic event** · Initials: `NF` · PR: `pending`
   - Prerequisites: DATA-1.
   - Branch suffix: `add-event-contract`.
   - Create: `src/contract.py` with `time_tag`, `kp_value`, `source`, and `ingested_at`.
