@@ -1,0 +1,377 @@
+{
+  "evaluation_version": 1,
+  "deterministic": true,
+  "network_used": false,
+  "candidate_provenance": "Fixed project-authored candidates exercise acceptance and failure boundaries; no case claims to be a fresh live model response.",
+  "runtime_ai": {
+    "provider": "OpenAI",
+    "model": "gpt-5-nano",
+    "prompt": "Write a concise briefing of no more than two sentences using only the facts supplied as JSON. Include the rule-based risk label. Do not add causes, locations, impacts, recommendations, forecasts, or any numbers or timestamps that are not supplied. Return only the briefing text.",
+    "input_boundary": [
+      "latest_kp",
+      "rolling_15m_max_kp",
+      "window_start_utc",
+      "window_end_utc",
+      "risk_label"
+    ]
+  },
+  "alert_evaluation": {
+    "expected": {
+      "run_counts": {
+        "messages_consumed": 9,
+        "unique_events": 8,
+        "duplicates_skipped": 1,
+        "late_events_skipped": 0,
+        "alerts_emitted": 2
+      },
+      "alerts": [
+        {
+          "triggered_at": "2026-08-11T00:10:00Z",
+          "latest_kp": 6.3,
+          "rolling_15m_max_kp": 6.3
+        },
+        {
+          "triggered_at": "2026-08-11T00:27:00Z",
+          "latest_kp": 7.0,
+          "rolling_15m_max_kp": 7.0
+        }
+      ]
+    },
+    "actual": {
+      "run_counts": {
+        "messages_consumed": 9,
+        "unique_events": 8,
+        "duplicates_skipped": 1,
+        "late_events_skipped": 0,
+        "alerts_emitted": 2
+      },
+      "alerts": [
+        {
+          "triggered_at": "2026-08-11T00:10:00Z",
+          "latest_kp": 6.3,
+          "rolling_15m_max_kp": 6.3
+        },
+        {
+          "triggered_at": "2026-08-11T00:27:00Z",
+          "latest_kp": 7.0,
+          "rolling_15m_max_kp": 7.0
+        }
+      ]
+    },
+    "counts_match": true,
+    "alerts_match": true,
+    "passed": true
+  },
+  "ai_cases": [
+    {
+      "case_id": "correct",
+      "description": "Uses only supplied values, UTC window, and risk label.",
+      "ai_input": {
+        "latest_kp": 7.0,
+        "rolling_15m_max_kp": 7.0,
+        "window_start_utc": "2026-08-11T00:12:00Z",
+        "window_end_utc": "2026-08-11T00:27:00Z",
+        "risk_label": "elevated"
+      },
+      "candidate_output": "Elevated radio-risk conditions were detected with a latest Kp of 7 and a rolling 15-minute maximum of 7. The UTC window ran from 2026-08-11T00:12:00Z to 2026-08-11T00:27:00Z, and the rule-based risk label was elevated.",
+      "expected_decision": "accepted",
+      "actual_decision": "accepted",
+      "decision_matches": true,
+      "checks": [
+        {
+          "name": "nonempty",
+          "passed": true,
+          "detail": "candidate contains text"
+        },
+        {
+          "name": "sentence_limit",
+          "passed": true,
+          "detail": "candidate contains 2 sentence(s); maximum is 2"
+        },
+        {
+          "name": "risk_label",
+          "passed": true,
+          "detail": "candidate uses approved label 'elevated'"
+        },
+        {
+          "name": "approved_numbers",
+          "passed": true,
+          "detail": "all numeric values match approved Kp facts or the named 15-minute window"
+        },
+        {
+          "name": "approved_timestamps",
+          "passed": true,
+          "detail": "all supplied timestamps match the approved UTC window"
+        },
+        {
+          "name": "unsupported_details",
+          "passed": true,
+          "detail": "no unsupported cause, location, impact, or recommendation found"
+        }
+      ],
+      "rejection_reasons": [],
+      "expected_fallback_used": false,
+      "fallback_used": false,
+      "fallback_matches": true,
+      "fallback_reason": null,
+      "final_briefing": "Elevated radio-risk conditions were detected with a latest Kp of 7 and a rolling 15-minute maximum of 7. The UTC window ran from 2026-08-11T00:12:00Z to 2026-08-11T00:27:00Z, and the rule-based risk label was elevated.",
+      "expected_matches_actual": true
+    },
+    {
+      "case_id": "wrong_number",
+      "description": "Invents a Kp value that is not in the approved facts.",
+      "ai_input": {
+        "latest_kp": 7.0,
+        "rolling_15m_max_kp": 7.0,
+        "window_start_utc": "2026-08-11T00:12:00Z",
+        "window_end_utc": "2026-08-11T00:27:00Z",
+        "risk_label": "elevated"
+      },
+      "candidate_output": "The latest Kp is 8 and the risk label is elevated.",
+      "expected_decision": "rejected",
+      "actual_decision": "rejected",
+      "decision_matches": true,
+      "checks": [
+        {
+          "name": "nonempty",
+          "passed": true,
+          "detail": "candidate contains text"
+        },
+        {
+          "name": "sentence_limit",
+          "passed": true,
+          "detail": "candidate contains 1 sentence(s); maximum is 2"
+        },
+        {
+          "name": "risk_label",
+          "passed": true,
+          "detail": "candidate uses approved label 'elevated'"
+        },
+        {
+          "name": "approved_numbers",
+          "passed": false,
+          "detail": "unsupported numeric value(s): [8.0]"
+        },
+        {
+          "name": "approved_timestamps",
+          "passed": true,
+          "detail": "all supplied timestamps match the approved UTC window"
+        },
+        {
+          "name": "unsupported_details",
+          "passed": true,
+          "detail": "no unsupported cause, location, impact, or recommendation found"
+        }
+      ],
+      "rejection_reasons": [
+        "unsupported numeric value(s): [8.0]"
+      ],
+      "expected_fallback_used": true,
+      "fallback_used": true,
+      "fallback_matches": true,
+      "fallback_reason": "model response rejected: unsupported numeric value(s): [8.0]",
+      "final_briefing": "Elevated radio-risk conditions were detected with a latest Kp of 7 and a rolling 15-minute maximum of 7. The UTC window ran from 2026-08-11T00:12:00Z to 2026-08-11T00:27:00Z, and the rule-based risk label was elevated.",
+      "expected_matches_actual": true
+    },
+    {
+      "case_id": "wrong_label",
+      "description": "Changes the deterministic risk label.",
+      "ai_input": {
+        "latest_kp": 7.0,
+        "rolling_15m_max_kp": 7.0,
+        "window_start_utc": "2026-08-11T00:12:00Z",
+        "window_end_utc": "2026-08-11T00:27:00Z",
+        "risk_label": "elevated"
+      },
+      "candidate_output": "The latest Kp is 7 and the risk label is normal.",
+      "expected_decision": "rejected",
+      "actual_decision": "rejected",
+      "decision_matches": true,
+      "checks": [
+        {
+          "name": "nonempty",
+          "passed": true,
+          "detail": "candidate contains text"
+        },
+        {
+          "name": "sentence_limit",
+          "passed": true,
+          "detail": "candidate contains 1 sentence(s); maximum is 2"
+        },
+        {
+          "name": "risk_label",
+          "passed": false,
+          "detail": "expected unnegated label 'elevated'; found ['normal']"
+        },
+        {
+          "name": "approved_numbers",
+          "passed": true,
+          "detail": "all numeric values match approved Kp facts or the named 15-minute window"
+        },
+        {
+          "name": "approved_timestamps",
+          "passed": true,
+          "detail": "all supplied timestamps match the approved UTC window"
+        },
+        {
+          "name": "unsupported_details",
+          "passed": true,
+          "detail": "no unsupported cause, location, impact, or recommendation found"
+        }
+      ],
+      "rejection_reasons": [
+        "expected unnegated label 'elevated'; found ['normal']"
+      ],
+      "expected_fallback_used": true,
+      "fallback_used": true,
+      "fallback_matches": true,
+      "fallback_reason": "model response rejected: expected unnegated label 'elevated'; found ['normal']",
+      "final_briefing": "Elevated radio-risk conditions were detected with a latest Kp of 7 and a rolling 15-minute maximum of 7. The UTC window ran from 2026-08-11T00:12:00Z to 2026-08-11T00:27:00Z, and the rule-based risk label was elevated.",
+      "expected_matches_actual": true
+    },
+    {
+      "case_id": "unsupported_detail",
+      "description": "Adds a cause that was not supplied by the deterministic pipeline.",
+      "ai_input": {
+        "latest_kp": 7.0,
+        "rolling_15m_max_kp": 7.0,
+        "window_start_utc": "2026-08-11T00:12:00Z",
+        "window_end_utc": "2026-08-11T00:27:00Z",
+        "risk_label": "elevated"
+      },
+      "candidate_output": "The elevated conditions were caused by a solar flare.",
+      "expected_decision": "rejected",
+      "actual_decision": "rejected",
+      "decision_matches": true,
+      "checks": [
+        {
+          "name": "nonempty",
+          "passed": true,
+          "detail": "candidate contains text"
+        },
+        {
+          "name": "sentence_limit",
+          "passed": true,
+          "detail": "candidate contains 1 sentence(s); maximum is 2"
+        },
+        {
+          "name": "risk_label",
+          "passed": true,
+          "detail": "candidate uses approved label 'elevated'"
+        },
+        {
+          "name": "approved_numbers",
+          "passed": true,
+          "detail": "all numeric values match approved Kp facts or the named 15-minute window"
+        },
+        {
+          "name": "approved_timestamps",
+          "passed": true,
+          "detail": "all supplied timestamps match the approved UTC window"
+        },
+        {
+          "name": "unsupported_details",
+          "passed": false,
+          "detail": "unsupported detail categories: cause"
+        }
+      ],
+      "rejection_reasons": [
+        "unsupported detail categories: cause"
+      ],
+      "expected_fallback_used": true,
+      "fallback_used": true,
+      "fallback_matches": true,
+      "fallback_reason": "model response rejected: unsupported detail categories: cause",
+      "final_briefing": "Elevated radio-risk conditions were detected with a latest Kp of 7 and a rolling 15-minute maximum of 7. The UTC window ran from 2026-08-11T00:12:00Z to 2026-08-11T00:27:00Z, and the rule-based risk label was elevated.",
+      "expected_matches_actual": true
+    },
+    {
+      "case_id": "too_long",
+      "description": "Exceeds the two-sentence output boundary.",
+      "ai_input": {
+        "latest_kp": 7.0,
+        "rolling_15m_max_kp": 7.0,
+        "window_start_utc": "2026-08-11T00:12:00Z",
+        "window_end_utc": "2026-08-11T00:27:00Z",
+        "risk_label": "elevated"
+      },
+      "candidate_output": "Kp is 7 and the risk is elevated. The rolling 15-minute maximum is 7. This is a third sentence.",
+      "expected_decision": "rejected",
+      "actual_decision": "rejected",
+      "decision_matches": true,
+      "checks": [
+        {
+          "name": "nonempty",
+          "passed": true,
+          "detail": "candidate contains text"
+        },
+        {
+          "name": "sentence_limit",
+          "passed": false,
+          "detail": "candidate contains 3 sentence(s); maximum is 2"
+        },
+        {
+          "name": "risk_label",
+          "passed": true,
+          "detail": "candidate uses approved label 'elevated'"
+        },
+        {
+          "name": "approved_numbers",
+          "passed": true,
+          "detail": "all numeric values match approved Kp facts or the named 15-minute window"
+        },
+        {
+          "name": "approved_timestamps",
+          "passed": true,
+          "detail": "all supplied timestamps match the approved UTC window"
+        },
+        {
+          "name": "unsupported_details",
+          "passed": true,
+          "detail": "no unsupported cause, location, impact, or recommendation found"
+        }
+      ],
+      "rejection_reasons": [
+        "candidate contains 3 sentence(s); maximum is 2"
+      ],
+      "expected_fallback_used": true,
+      "fallback_used": true,
+      "fallback_matches": true,
+      "fallback_reason": "model response rejected: candidate contains 3 sentence(s); maximum is 2",
+      "final_briefing": "Elevated radio-risk conditions were detected with a latest Kp of 7 and a rolling 15-minute maximum of 7. The UTC window ran from 2026-08-11T00:12:00Z to 2026-08-11T00:27:00Z, and the rule-based risk label was elevated.",
+      "expected_matches_actual": true
+    },
+    {
+      "case_id": "api_unavailable",
+      "description": "Simulates an unavailable model request without network access.",
+      "ai_input": {
+        "latest_kp": 7.0,
+        "rolling_15m_max_kp": 7.0,
+        "window_start_utc": "2026-08-11T00:12:00Z",
+        "window_end_utc": "2026-08-11T00:27:00Z",
+        "risk_label": "elevated"
+      },
+      "candidate_output": null,
+      "expected_decision": "unavailable",
+      "actual_decision": "unavailable",
+      "decision_matches": true,
+      "checks": [],
+      "rejection_reasons": [],
+      "expected_fallback_used": true,
+      "fallback_used": true,
+      "fallback_matches": true,
+      "fallback_reason": "model request failed: TimeoutError",
+      "final_briefing": "Elevated radio-risk conditions were detected with a latest Kp of 7 and a rolling 15-minute maximum of 7. The UTC window ran from 2026-08-11T00:12:00Z to 2026-08-11T00:27:00Z, and the rule-based risk label was elevated.",
+      "expected_matches_actual": true
+    }
+  ],
+  "summary": {
+    "ai_cases_total": 6,
+    "ai_cases_passed": 6,
+    "ai_case_pass_rate": 1.0,
+    "total_assertions": 7,
+    "assertions_passed": 7,
+    "overall_pass_rate": 1.0,
+    "overall_passed": true
+  }
+}

@@ -360,7 +360,7 @@ The live NOAA poller is not on the critical path. Build it only after the replay
   - Implement the two-sentence deterministic template first, including a no-alert form.
   - Done when: `briefing.txt` is produced with no API key and every number/label comes from `alert.json`.
 
-- [~] **AI-2 · Add optional model call** · Initials: `NF` · PR: `#21`
+- [x] **AI-2 · Add optional model call** · Initials: `NF` · PR: `#21`
   - Prerequisites: AI-1.
   - Branch suffix: `add-optional-ai-briefing`.
   - Read an optional API key from the environment; never commit it. Keep provider/model, timeout, and prompt visible in configuration or code.
@@ -374,7 +374,7 @@ The live NOAA poller is not on the critical path. Build it only after the replay
   - Return explicit rejection reasons. Do not silently repair a rejected response and call it accepted.
   - Done when: fixed accepted and rejected candidates receive their expected decisions in `tests/test_briefing.py`.
 
-- [ ] **AI-4 · Save evaluation evidence** · Initials: `NF` · PR: `____`
+- [~] **AI-4 · Save evaluation evidence** · Initials: `NF` · PR: `#23`
   - Prerequisites: AI-2, AI-3.
   - Branch suffix: `add-evaluation-harness`.
   - Create: `src/evaluate.py` and `evaluation/evaluation.json` containing expected/actual alert results plus AI input, candidate output, expected/actual decision, checks, rejection reasons, fallback status, totals, and pass rate.
