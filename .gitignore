@@ -21,6 +21,7 @@ htmlcov/
 kafka-data/
 dist/
 final_project_*.zip
+evaluation/live_candidate.txt
 
 # Course handouts and proposal-generation workspace are references, not project code
 /Final Presentation Schedule and Rubrics - MSDS 682.pdf

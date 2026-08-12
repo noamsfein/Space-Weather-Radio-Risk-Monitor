@@ -288,7 +288,21 @@ python -m src.briefing
 It reads only the latest alert's approved facts and writes
 `outputs/briefing.txt`. If the alert list is empty, it writes a two-sentence
 no-alert briefing without inventing Kp values or timestamps. This command does
-not read `OPENAI_API_KEY` or make a network request.
+not read `OPENAI_API_KEY`, load `.env`, or make a network request.
+
+The optional live briefing is an explicit separate command:
+
+```bash
+python -m src.briefing --use-live-ai \
+  --candidate-path evaluation/live_candidate.txt
+```
+
+It loads the private local `.env`, sends only the five approved alert facts to
+`gpt-5-nano`, applies a 10-second request timeout, and validates the returned
+text before writing it. Missing credentials, request failure, empty or rejected
+output, and no-alert input all use the deterministic fallback automatically.
+The optional candidate file preserves the raw response for evaluation; it is
+never treated as the accepted briefing unless validation passes.
 
 ## Team ownership
 

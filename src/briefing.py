@@ -12,8 +12,10 @@ from collections.abc import Sequence
 from dataclasses import dataclass
 from datetime import datetime
 from pathlib import Path
-from typing import Any, Literal
+from typing import Any, Callable, Literal, Protocol
 
+from dotenv import load_dotenv
+from openai import OpenAI
 from pydantic import (
     BaseModel,
     ConfigDict,
@@ -26,6 +28,14 @@ from src.alert_output import DEFAULT_ALERT_PATH
 
 
 DEFAULT_BRIEFING_PATH = Path("outputs/briefing.txt")
+DEFAULT_OPENAI_MODEL = "gpt-5-nano"
+OPENAI_TIMEOUT_SECONDS = 10.0
+MODEL_INSTRUCTIONS = (
+    "Write a concise briefing of no more than two sentences using only the "
+    "facts supplied as JSON. Include the rule-based risk label. Do not add "
+    "causes, locations, impacts, recommendations, forecasts, or any numbers "
+    "or timestamps that are not supplied. Return only the briefing text."
+)
 
 
 class BriefingError(RuntimeError):
@@ -84,6 +94,28 @@ class BriefingValidation:
     accepted: bool
     checks: tuple[BriefingCheck, ...]
     rejection_reasons: tuple[str, ...]
+
+
+@dataclass(frozen=True)
+class BriefingGeneration:
+    """Final briefing plus enough provenance for later saved evaluation."""
+
+    text: str
+    source: Literal["model", "fallback"]
+    model: str | None
+    candidate: str | None
+    fallback_reason: str | None
+    validation: BriefingValidation | None
+
+
+class ResponsesAPI(Protocol):
+    """Small injectable boundary used by the OpenAI client and test fakes."""
+
+    def create(self, **kwargs: Any) -> Any: ...
+
+
+class BriefingClient(Protocol):
+    responses: ResponsesAPI
 
 
 _NUMBER_PATTERN = re.compile(r"(?<![\w])\d+(?:\.\d+)?(?![\w])")
@@ -311,16 +343,102 @@ def deterministic_briefing(facts: BriefingFacts | None) -> str:
     )
 
 
-def write_briefing(
-    alert_path: str | Path = DEFAULT_ALERT_PATH,
-    output_path: str | Path = DEFAULT_BRIEFING_PATH,
+def _model_input(facts: BriefingFacts) -> str:
+    """Serialize only the five approved facts sent to the model."""
+
+    return json.dumps(facts.model_dump(), sort_keys=True, separators=(",", ":"))
+
+
+def request_model_candidate(
+    facts: BriefingFacts,
+    client: BriefingClient,
+    model: str,
 ) -> str:
-    """Atomically write the deterministic briefing derived from ``alert.json``."""
+    """Request one bounded candidate through the OpenAI Responses API."""
 
-    briefing = deterministic_briefing(load_briefing_facts(alert_path))
-    target = Path(output_path)
+    response = client.responses.create(
+        model=model,
+        reasoning={"effort": "low"},
+        instructions=MODEL_INSTRUCTIONS,
+        input=_model_input(facts),
+        max_output_tokens=600,
+    )
+    candidate = getattr(response, "output_text", None)
+    if not isinstance(candidate, str):
+        raise BriefingError("model response did not contain text")
+    return candidate.strip()
+
+
+def generate_briefing(
+    facts: BriefingFacts | None,
+    *,
+    use_live_ai: bool = False,
+    client: BriefingClient | None = None,
+    api_key: str | None = None,
+    model: str | None = None,
+) -> BriefingGeneration:
+    """Use a validated model candidate when requested, otherwise fall back."""
+
+    fallback = deterministic_briefing(facts)
+    if not use_live_ai:
+        return BriefingGeneration(
+            fallback, "fallback", None, None, "live AI not requested", None
+        )
+    if facts is None:
+        return BriefingGeneration(
+            fallback, "fallback", None, None, "no alert facts to brief", None
+        )
+
+    selected_model = (model or os.getenv("OPENAI_MODEL") or DEFAULT_OPENAI_MODEL).strip()
+    if not selected_model:
+        selected_model = DEFAULT_OPENAI_MODEL
+    selected_key = api_key if api_key is not None else os.getenv("OPENAI_API_KEY")
+    if selected_key is not None:
+        selected_key = selected_key.strip()
+    if client is None and not selected_key:
+        return BriefingGeneration(
+            fallback,
+            "fallback",
+            selected_model,
+            None,
+            "OPENAI_API_KEY is missing",
+            None,
+        )
+
+    try:
+        active_client = client or OpenAI(
+            api_key=selected_key,
+            timeout=OPENAI_TIMEOUT_SECONDS,
+            max_retries=0,
+        )
+        candidate = request_model_candidate(facts, active_client, selected_model)
+    except Exception as exc:
+        return BriefingGeneration(
+            fallback,
+            "fallback",
+            selected_model,
+            None,
+            f"model request failed: {type(exc).__name__}",
+            None,
+        )
+
+    validation = validate_briefing(candidate, facts)
+    if not validation.accepted:
+        return BriefingGeneration(
+            fallback,
+            "fallback",
+            selected_model,
+            candidate,
+            "model response rejected: " + "; ".join(validation.rejection_reasons),
+            validation,
+        )
+    return BriefingGeneration(
+        candidate, "model", selected_model, candidate, None, validation
+    )
+
+
+def _atomic_write_text(target: Path, text: str) -> None:
     target.parent.mkdir(parents=True, exist_ok=True)
-
     temporary_path: Path | None = None
     try:
         file_descriptor, raw_path = tempfile.mkstemp(
@@ -330,7 +448,7 @@ def write_briefing(
         )
         temporary_path = Path(raw_path)
         with os.fdopen(file_descriptor, "w", encoding="utf-8") as temporary_file:
-            temporary_file.write(briefing + "\n")
+            temporary_file.write(text + "\n")
             temporary_file.flush()
             os.fsync(temporary_file.fileno())
         os.replace(temporary_path, target)
@@ -339,27 +457,85 @@ def write_briefing(
         if temporary_path is not None:
             temporary_path.unlink(missing_ok=True)
 
-    return briefing
+
+def write_briefing(
+    alert_path: str | Path = DEFAULT_ALERT_PATH,
+    output_path: str | Path = DEFAULT_BRIEFING_PATH,
+    *,
+    use_live_ai: bool = False,
+    client: BriefingClient | None = None,
+    api_key: str | None = None,
+    model: str | None = None,
+    candidate_path: str | Path | None = None,
+    generation_callback: Callable[[BriefingGeneration], None] | None = None,
+) -> str:
+    """Atomically write a validated live briefing or deterministic fallback."""
+
+    if use_live_ai:
+        load_dotenv()
+    generation = generate_briefing(
+        load_briefing_facts(alert_path),
+        use_live_ai=use_live_ai,
+        client=client,
+        api_key=api_key,
+        model=model,
+    )
+    _atomic_write_text(Path(output_path), generation.text)
+    if candidate_path is not None:
+        saved_candidate_path = Path(candidate_path)
+        if generation.candidate is not None:
+            _atomic_write_text(saved_candidate_path, generation.candidate)
+        else:
+            saved_candidate_path.unlink(missing_ok=True)
+    if generation_callback is not None:
+        generation_callback(generation)
+    return generation.text
 
 
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
-        description="Write a deterministic briefing from rule-based alert facts."
+        description="Write a validated live briefing or deterministic fallback."
     )
     parser.add_argument("--alert-path", type=Path, default=DEFAULT_ALERT_PATH)
     parser.add_argument("--output-path", type=Path, default=DEFAULT_BRIEFING_PATH)
+    parser.add_argument(
+        "--use-live-ai",
+        action="store_true",
+        help="request an optional OpenAI briefing; otherwise stay deterministic",
+    )
+    parser.add_argument(
+        "--candidate-path",
+        type=Path,
+        help="optionally save the raw model candidate for later evaluation",
+    )
     return parser
 
 
 def main(argv: Sequence[str] | None = None) -> int:
     args = build_parser().parse_args(argv)
+    generation: BriefingGeneration | None = None
+
+    def capture_generation(value: BriefingGeneration) -> None:
+        nonlocal generation
+        generation = value
+
     try:
-        briefing = write_briefing(args.alert_path, args.output_path)
+        briefing = write_briefing(
+            args.alert_path,
+            args.output_path,
+            use_live_ai=args.use_live_ai,
+            candidate_path=args.candidate_path,
+            generation_callback=capture_generation,
+        )
     except (BriefingError, OSError, ValueError) as exc:
         print(f"Briefing failed: {exc}")
         return 1
 
     print(briefing)
+    if generation is not None:
+        print(f"Briefing source: {generation.source}")
+        if generation.fallback_reason is not None:
+            print(f"Fallback reason: {generation.fallback_reason}")
     print(f"Wrote {args.output_path}")
     return 0
 
