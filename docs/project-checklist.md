@@ -374,7 +374,7 @@ The live NOAA poller is not on the critical path. Build it only after the replay
   - Return explicit rejection reasons. Do not silently repair a rejected response and call it accepted.
   - Done when: fixed accepted and rejected candidates receive their expected decisions in `tests/test_briefing.py`.
 
-- [ ] **AI-4 · Save evaluation evidence** · Initials: `____` · PR: `____`
+- [ ] **AI-4 · Save evaluation evidence** · Initials: `NF` · PR: `____`
   - Prerequisites: AI-2, AI-3.
   - Branch suffix: `add-evaluation-harness`.
   - Create: `src/evaluate.py` and `evaluation/evaluation.json` containing expected/actual alert results plus AI input, candidate output, expected/actual decision, checks, rejection reasons, fallback status, totals, and pass rate.
