@@ -205,7 +205,7 @@ The live NOAA poller is not on the critical path. Build it only after the replay
 
 ## Phase 0 — coordination and repository foundation
 
-- [x] **P0-0 · Establish a safe project Git root** · Initials: `____` · PR: `N/A—commit 1840e86`
+- [x] **P0-0 · Establish a safe project Git root** · Initials: `NF` · PR: `N/A—commit 1840e86`
   - Prerequisites: none.
   - Branch suffix: `setup-project-repo`.
   - Completed: this directory is now its own Git repository, the default branch is `main`, and `origin` is `https://github.com/noamsfein/Space-Weather-Radio-Risk-Monitor.git`.
@@ -241,7 +241,7 @@ The live NOAA poller is not on the critical path. Build it only after the replay
 
 ## Phase 1 — source, replay data, and event contract
 
-- [x] **DATA-0 · Verify the source is correct, current, and viable** · Initials: `____` · PR: `N/A—commit 1840e86`
+- [x] **DATA-0 · Verify the source is correct, current, and viable** · Initials: `NF` · PR: `N/A—commit 1840e86`
   - Prerequisites: none for the initial check; rerun after P0-3 once the project environment exists.
   - Branch suffix: `verify-noaa-source`.
   - Fetch the official endpoint into a temporary file. Confirm HTTP success, JSON-array shape, required raw fields, numeric `estimated_kp` in 0–9, unique/ordered timestamps, recent last timestamp, and roughly one-minute cadence.
@@ -250,14 +250,14 @@ The live NOAA poller is not on the critical path. Build it only after the replay
   - Initial result on 2026-08-11: 358 unique records, 357-minute span, no missing required fields, one-minute cadence, Kp range 0.00–3.33, and no Kp 6 crossing. The source is viable and the deterministic threshold fixture is required.
   - Done when: the official endpoint, committed raw sample, source documentation, canonical field mapping, and replay strategy agree. Repeat this check before the final report and update the dated profile.
 
-- [x] **DATA-1 · Capture and attribute a raw NOAA sample** · Initials: `____` · PR: `N/A—commit 1840e86`
+- [x] **DATA-1 · Capture and attribute a raw NOAA sample** · Initials: `NF` · PR: `N/A—commit 1840e86`
   - Prerequisites: DATA-0.
   - Branch suffix: `capture-noaa-sample`.
   - Save: a small raw response or subset at `data/sample_or_replay_data/noaa_raw_sample.json` with the source URL and retrieval timestamp in the directory README.
   - Update: observed schema and rights/attribution note in `DATA_SOURCE.md`.
   - Done when: the sample parses, contains no private data, the four raw fields are confirmed, and a reviewer can tell which records are observed NOAA data.
 
-- [x] **DATA-2 · Create labeled deterministic fixtures** · Initials: `____` · PR: `N/A—commit 1840e86`
+- [x] **DATA-2 · Create labeled deterministic fixtures** · Initials: `NF` · PR: `N/A—commit 1840e86`
   - Prerequisites: DATA-1.
   - Branch suffix: `add-replay-fixtures`.
   - Create: `data/sample_or_replay_data/kp_replay.jsonl`, `data/fixtures/invalid_records.jsonl`, and `data/fixtures/replay_expected.json`. Synthetic records must not be presented as raw NOAA history.
@@ -329,7 +329,7 @@ The live NOAA poller is not on the critical path. Build it only after the replay
   - Use a JSON object with an `alerts` list so the replay can show both crossings. Write through a temporary file so a failed run does not leave partial JSON.
   - Done when: the saved JSON contains the two expected alerts and no AI-derived decision field.
 
-- [~] **OUTPUT-2 · Write `metrics.csv`** · Initials: `NF` · PR: `#14`
+- [x] **OUTPUT-2 · Write `metrics.csv`** · Initials: `NF` · PR: `#14`
   - Prerequisites: PROCESS-1.
   - Branch suffix: `write-metrics-output`.
   - Include: `time_tag`, Kp value, rolling maximum, risk label, alert-emitted flag, and processing status.
