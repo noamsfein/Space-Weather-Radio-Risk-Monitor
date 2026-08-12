@@ -409,7 +409,7 @@ The live NOAA poller is not on the critical path. Build it only after the replay
   - Done when: corrupting an output fact, CSV header/count, or candidate response causes a clear focused failure without a live API call.
   - Audit 2026-08-12 (NN): every required case is covered across `tests/test_alert_output.py`, `tests/test_metrics_output.py`, `tests/test_briefing.py`, and `tests/test_evaluate.py`; all AI cases use injected fake clients, and no test makes a live call. Command: `pytest -q tests/test_alert_output.py tests/test_metrics_output.py tests/test_briefing.py tests/test_evaluate.py` (52 passed).
 
-- [ ] **DEMO-1 · Build `run_demo.sh`** · Initials: `____` · PR: `____`
+- [~] **DEMO-1 · Build `run_demo.sh`** · Initials: `NN` · PR: `#27`
   - Prerequisites: INGEST-1, PROCESS-3, AI-4.
   - Branch suffix: `add-one-command-demo`.
   - Start and wait for Kafka, clear only generated demo artifacts, run the finite consumer and replay in a controlled order, wait for completion, create all four artifacts, and run acceptance tests.
