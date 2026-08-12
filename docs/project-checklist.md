@@ -395,11 +395,12 @@ The live NOAA poller is not on the critical path. Build it only after the replay
   - Test valid source normalization, UTC handling, missing field, malformed time, nonnumeric Kp, NaN/infinity, and Kp outside 0–9.
   - Done when: `pytest -q tests/test_contract.py` passes and each validation rule has a positive or negative case.
 
-- [ ] **TEST-2 · Complete window and alert tests** · Initials: `____` · PR: `____`
+- [~] **TEST-2 · Complete window and alert tests** · Initials: `NN` · PR: `pending`
   - Prerequisites: PROCESS-2.
   - Branch suffix: `complete-processor-tests`.
   - Test the exact 15-minute boundary, direct jump above 6, still-elevated observations, duplicate timestamp, window expiry, rearm, and second crossing.
   - Done when: exact expected alert count and trigger timestamps match the fixture.
+  - Audit 2026-08-12 (NN): every required case is covered in `tests/test_processor.py`; alert count and trigger timestamps are asserted against `data/fixtures/replay_expected.json`. Command: `pytest -q tests/test_processor.py` (13 passed).
 
 - [ ] **TEST-3 · Complete output and AI tests** · Initials: `____` · PR: `____`
   - Prerequisites: OUTPUT-2, AI-4.
