@@ -1,6 +1,6 @@
 # Data Source
 
-This file documents the source used by the Space Weather Radio-Risk Monitor. It is written before implementation so the team has one agreed contract; update observed details and evidence as the data is collected.
+This file documents the source used by the Space Weather Radio-Risk Monitor as implemented and verified.
 
 ## Source inventory
 
@@ -11,15 +11,19 @@ This file documents the source used by the Space Weather Radio-Risk Monitor. It 
 | Endpoint | `https://services.swpc.noaa.gov/json/planetary_k_index_1m.json` |
 | Access | Public HTTPS JSON; no API key or account required |
 | Cost | None observed |
-| Planned cadence | Poll every 60 seconds; publish only unseen `time_tag` values |
-| Project classification | Realtime input with deterministic cached replay |
+| Runtime access | None — the required demo replays a committed, labeled fixture; live polling was deliberately omitted (see below) |
+| Project classification | Cached deterministic replay of a validated realtime source |
 | Authentication | None |
 | Rights | NWS public-domain terms unless specifically noted; attribution and no implied endorsement |
 | Personal data | None |
 
+## Decision to omit the live poller
+
+The optional 60-second live poller (checklist task `INGEST-2`) was not implemented. The project checklist keeps it off the critical path, and quiet live data cannot demonstrate the Kp 6 alert anyway (both dated source checks observed a maximum Kp under 3.5). The source's viability is instead proven by the committed raw sample and the dated `source_profile.json`, and `src/contract.py::normalize_noaa_record` converts a raw NOAA record into the same canonical event the replay uses — verified by tests against the committed sample — so a poller could be added later without changing the contract, topic, or consumer. If one is added, it must poll no faster than every 60 seconds, use a short HTTP timeout, publish only unseen `time_tag` values, log failures rather than fabricate data, and retry on the next interval.
+
 ## Observed raw schema
 
-A source check on August 11, 2026 returned records with these fields:
+Source checks on August 11 and August 12, 2026 returned records with these fields:
 
 | Raw field | Observed type | Project use |
 |---|---|---|
@@ -39,11 +43,11 @@ Representative raw record:
 }
 ```
 
-The source timestamp currently omits a trailing `Z`; the application will parse it as UTC and serialize the canonical timestamp with `Z`.
+The source timestamp omits a trailing `Z`; the application parses it as UTC (the documented source convention) and serializes the canonical timestamp with `Z`. This behavior is unit-tested.
 
 ## Canonical event contract
 
-The poller and replay producer emit the same structure:
+NOAA normalization (`normalize_noaa_record`) and the replay producer emit the same structure:
 
 ```json
 {
@@ -69,25 +73,23 @@ Deduplication identity: `time_tag`
 
 The endpoint is publicly accessible and does not require credentials. The [National Weather Service disclaimer](https://www.weather.gov/disclaimer) states that information on NWS web pages is in the public domain unless specifically noted otherwise and may be used without charge for lawful purposes. It must not be claimed as the user's own, presented as an NOAA/NWS endorsement, or modified and then presented as official government material.
 
-The project will credit “NOAA/NWS Space Weather Prediction Center” and preserve the endpoint and retrieval date with every cached sample. Project-created threshold fixtures will be labeled synthetic. The project will not describe the feed as independent one-minute measurements, an official NOAA alert, or a forecast.
+The project credits “NOAA/NWS Space Weather Prediction Center” and preserves the endpoint and retrieval date with every cached sample. Project-created threshold fixtures are labeled synthetic (`synthetic://kp-threshold-fixture`), and the contract validator rejects any other provenance value. The project does not describe the feed as independent one-minute measurements, an official NOAA alert, or a forecast.
 
 The current committed source evidence is under `data/sample_or_replay_data/`. `noaa_raw_sample.json` contains unmodified observed records, `source_profile.json` records the dated viability check, and `kp_replay.jsonl` uses a synthetic provenance identifier so its threshold values cannot be confused with observed NOAA history.
 
-## Rate limits and source behavior
+## Rate limits and failure handling
 
-No explicit endpoint-specific rate limit has been identified in the supplied project materials. The project therefore uses a conservative 60-second poll interval, a short request timeout, and no parallel calls. The poller publishes only records whose `time_tag` has not already been seen.
+No explicit endpoint-specific rate limit has been identified in the supplied project materials. Because the live poller was omitted, the implemented system contacts NOAA only during manual, one-time source checks (a single `curl`-style fetch with a 15-second timeout, no parallel calls); the runtime demo makes no NOAA request at all.
 
-The project must handle:
+Failure handling that is implemented and tested:
 
-- HTTP timeouts and non-200 responses;
-- invalid JSON or an unexpected top-level shape;
-- missing required fields;
-- `estimated_kp` outside 0–9;
-- duplicate timestamps;
-- empty or quiet feeds; and
-- later source revisions.
+- missing required fields, malformed timestamps, nonnumeric or out-of-range `estimated_kp`, and NaN/infinity are rejected by the contract validator (`tests/test_contract.py`, plus the committed negative fixture `data/fixtures/invalid_records.jsonl`);
+- duplicate `time_tag` values are skipped by the consumer without changing window state, and appear in `metrics.csv` as `duplicate_skipped`;
+- out-of-order (late) events are skipped and counted without corrupting the rolling window;
+- malformed Kafka messages are skipped with a visible warning instead of crashing the consumer; and
+- a quiet feed with no Kp 6 crossing is expected — this is exactly why the labeled synthetic fixture is the required alert demonstration.
 
-The live poller should log failures and retry on the next scheduled interval. It should not fabricate a Kp value or reuse an old value as though it were new.
+Timeout and retry settings that exist in the implemented code: the Kafka clients use bounded operation timeouts in `src/kafka_io.py`, the finite consumer fails if no valid event arrives within 15 seconds (`--idle-timeout-seconds`), and the optional live briefing uses a 10-second OpenAI request timeout with automatic deterministic fallback.
 
 ## Limitations
 
@@ -100,7 +102,7 @@ The live poller should log failures and retry on the next scheduled interval. It
 
 ## Cache and deterministic replay
 
-The required reviewer path uses a small attributed JSONL file under `data/sample_or_replay_data/`. It must contain:
+The required reviewer path uses `data/sample_or_replay_data/kp_replay.jsonl`, a nine-record labeled synthetic JSONL fixture. It contains:
 
 - valid observations below Kp 6;
 - a first transition that makes the rolling maximum reach or exceed Kp 6;
@@ -110,21 +112,21 @@ The required reviewer path uses a small attributed JSONL file under `data/sample
 - one duplicate `time_tag`; and
 - separate invalid records in a labeled negative-test fixture.
 
-Replay requirements:
+Replay behavior, all implemented and tested:
 
-- preserve the canonical schema used by live ingestion;
-- process valid records in ascending `time_tag` order;
-- use a configurable short replay delay rather than sleeping for real minutes;
-- record the original source URL and the cache creation date;
-- contain no credentials or private information; and
-- be committed with the final submission so the demo does not depend on NOAA availability.
+- the replay uses the same canonical schema and validator as NOAA normalization;
+- the whole file is validated, including nondecreasing `time_tag` order, before anything is published;
+- `--delay-seconds` provides a configurable short delay instead of sleeping for real minutes;
+- the cached samples record the source URL and retrieval date (`data/sample_or_replay_data/README.md`, `source_profile.json`);
+- no fixture contains credentials or private information; and
+- everything is committed, so the demo never depends on NOAA availability.
 
 ## Data-source completion checklist
 
 - [x] Save a small raw NOAA sample with retrieval date and source URL.
 - [x] Add labeled threshold and invalid fixtures without misrepresenting synthetic records as raw NOAA observations.
-- [ ] Confirm field names and types again before the final report.
+- [x] Confirm field names and types again before the final report — rechecked 2026-08-12: same four raw fields, 358 unique ordered records, one-minute cadence, Kp 0.00–2.67, no Kp 6 crossing; `source_profile.json` updated.
 - [x] Record the official NWS public-domain, attribution, and disclaimer terms.
-- [ ] Document actual timeout, retry, and polling settings.
-- [ ] Demonstrate duplicate suppression and invalid-record handling.
-- [ ] Confirm the required replay works with the network disconnected.
+- [x] Document actual timeout, retry, and polling settings (see “Rate limits and failure handling”; there is no runtime polling).
+- [x] Demonstrate duplicate suppression and invalid-record handling — the demo's `metrics.csv` contains the `duplicate_skipped` row, and `tests/test_contract.py` exercises every committed invalid record.
+- [x] Confirm the required replay works without NOAA or an API key — `env -u OPENAI_API_KEY ./run_demo.sh` passes; the demo path opens no connection beyond `localhost` (Kafka) and reads only committed files.
