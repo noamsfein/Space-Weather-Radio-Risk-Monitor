@@ -133,17 +133,35 @@ def test_readme_embeds_the_authoritative_representative_event() -> None:
     assert list(KpEvent.model_fields) == list(representative)
 
 
+def test_naive_timestamps_are_interpreted_as_utc() -> None:
+    event = KpEvent.model_validate(
+        canonical_record(
+            time_tag="2026-08-11T00:10:00",
+            ingested_at="2026-08-11T00:10:05",
+        )
+    )
+
+    assert event.time_tag.tzinfo == timezone.utc
+    serialized = json.loads(event.model_dump_json())
+    assert serialized["time_tag"] == "2026-08-11T00:10:00Z"
+    assert serialized["ingested_at"] == "2026-08-11T00:10:05Z"
+
+
 @pytest.mark.parametrize(
     ("record", "expected_error"),
     [
         (canonical_record(time_tag="not-a-time"), "time_tag must be a valid timestamp"),
+        (canonical_record(time_tag=1754870400), "time_tag must be a valid timestamp"),
+        (canonical_record(time_tag=None), "time_tag must be a valid timestamp"),
         (canonical_record(ingested_at=""), "ingested_at must be a valid timestamp"),
         (canonical_record(kp_value="6.3"), "Kp must be numeric"),
         (canonical_record(kp_value=True), "Kp must be numeric"),
+        (canonical_record(kp_value=None), "Kp must be numeric"),
         (canonical_record(kp_value=-0.01), "Kp must be between 0 and 9"),
         (canonical_record(kp_value=9.01), "Kp must be between 0 and 9"),
         (canonical_record(kp_value=math.nan), "Kp must be finite"),
         (canonical_record(kp_value=math.inf), "Kp must be finite"),
+        (canonical_record(kp_value=-math.inf), "Kp must be finite"),
         (
             canonical_record(source="https://example.com/not-noaa"),
             "source must be documented NOAA or synthetic replay provenance",

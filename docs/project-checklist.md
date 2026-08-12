@@ -389,7 +389,7 @@ The live NOAA poller is not on the critical path. Build it only after the replay
 
 ## Phase 5 — testing and one-command review path
 
-- [ ] **TEST-1 · Complete contract and source tests** · Initials: `____` · PR: `____`
+- [~] **TEST-1 · Complete contract and source tests** · Initials: `NN` · PR: `#24`
   - Prerequisites: CONTRACT-1.
   - Branch suffix: `complete-contract-tests`.
   - Test valid source normalization, UTC handling, missing field, malformed time, nonnumeric Kp, NaN/infinity, and Kp outside 0–9.
