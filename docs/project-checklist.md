@@ -217,7 +217,7 @@ The live NOAA poller is not on the critical path. Build it only after the replay
   - Do: read `README.md`, this checklist, `DATA_SOURCE.md`, `AI_USAGE.md`, and the proposal together. Confirm the fixed decisions and claim non-overlapping ready tasks.
   - Done when: both partners can explain the source-to-output path and have agreed not to add a dashboard, model, or extra source.
 
-- [ ] **P0-2 · Create implementation directories** · Initials: `____` · PR: `____`
+- [~] **P0-2 · Create implementation directories** · Initials: `NF` · PR: `pending`
   - Prerequisites: P0-1.
   - Branch suffix: `scaffold-project-layout`.
   - Create: `src/`, `tests/`, `data/sample_or_replay_data/`, `data/fixtures/`, `outputs/`, and `evaluation/`.
