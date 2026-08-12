@@ -280,7 +280,7 @@ The live NOAA poller is not on the critical path. Build it only after the replay
 
 ## Phase 2 — Kafka and replay ingestion
 
-- [~] **KAFKA-1 · Pass a broker smoke test** · Initials: `NF` · PR: `pending`
+- [~] **KAFKA-1 · Pass a broker smoke test** · Initials: `NF` · PR: `#8`
   - Prerequisites: P0-4, P0-3, CONTRACT-1.
   - Branch suffix: `add-kafka-io`.
   - Create: small shared Kafka producer/consumer helpers if needed.
