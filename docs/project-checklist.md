@@ -336,7 +336,7 @@ The live NOAA poller is not on the critical path. Build it only after the replay
   - Write one row per consumed canonical Kafka message so the duplicate can appear as `duplicate_skipped`.
   - Done when: row order/count and values match the fixture and the file opens as standard CSV with no extra index column.
 
-- [ ] **PROCESS-3 · Connect Kafka consumer to processor and files** · Initials: `____` · PR: `____`
+- [~] **PROCESS-3 · Connect Kafka consumer to processor and files** · Initials: `NF` · PR: `pending`
   - Prerequisites: KAFKA-1, PROCESS-2, OUTPUT-1, OUTPUT-2.
   - Branch suffix: `connect-stream-processor`.
   - Create: `src/stream_processor.py`.

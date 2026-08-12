@@ -4,13 +4,14 @@ import uuid
 from pathlib import Path
 
 import pytest
+from confluent_kafka import Consumer, TopicPartition
 
 from src.contract import KpEvent
 from src.kafka_io import (
     KP_MESSAGE_KEY,
     KP_TOPIC,
+    consumer_config,
     ensure_kp_topic,
-    new_consumer,
     new_producer,
     publish_event,
     consume_event,
@@ -30,7 +31,10 @@ def test_representative_event_round_trips_through_real_kafka() -> None:
         (PROJECT_ROOT / "data/fixtures/representative_event.json").read_text()
     )
     ensure_kp_topic()
-    consumer = new_consumer(f"kafka-integration-{uuid.uuid4()}")
+    consumer = Consumer(consumer_config(f"kafka-integration-{uuid.uuid4()}"))
+    partition = TopicPartition(KP_TOPIC, 0)
+    _, starting_offset = consumer.get_watermark_offsets(partition, timeout=10)
+    consumer.assign([TopicPartition(KP_TOPIC, 0, starting_offset)])
 
     try:
         published = publish_event(new_producer(), expected)

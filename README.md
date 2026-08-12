@@ -108,6 +108,19 @@ python -m src.replay_producer
 
 Use `--delay-seconds 0.25` when a slower event-by-event replay is helpful for the presentation. The command validates the entire JSONL file and its nondecreasing event-time order before publishing anything; it deliberately preserves the repeated `00:10` record so the consumer can demonstrate deduplication.
 
+To run the current Kafka-to-output path manually, start the finite consumer in one
+terminal before publishing the replay in another:
+
+```bash
+python -m src.stream_processor
+python -m src.replay_producer
+```
+
+The consumer stops after nine valid events, writes `outputs/alert.json` and
+`outputs/metrics.csv`, skips malformed messages with a visible warning, and fails
+if the next valid event does not arrive within 15 seconds. Task `DEMO-1` will wrap
+these commands in the final one-command demo script.
+
 ## Alert behavior
 
 For each valid observation, the consumer calculates the maximum `kp_value` in the inclusive 15-minute event-time window ending at the current `time_tag`.
