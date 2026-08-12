@@ -1,0 +1,35 @@
+{
+  "run_counts": {
+    "messages_consumed": 9,
+    "unique_events": 8,
+    "duplicates_skipped": 1,
+    "late_events_skipped": 0,
+    "alerts_emitted": 2
+  },
+  "alerts": [
+    {
+      "alert_id": "kp-alert-20260811T001000Z",
+      "triggered_at": "2026-08-11T00:10:00Z",
+      "latest_kp": 6.3,
+      "rolling_15m_max_kp": 6.3,
+      "window_start_utc": "2026-08-10T23:55:00Z",
+      "window_end_utc": "2026-08-11T00:10:00Z",
+      "window_minutes": 15.0,
+      "threshold_kp": 6.0,
+      "risk_label": "elevated",
+      "source": "synthetic://kp-threshold-fixture"
+    },
+    {
+      "alert_id": "kp-alert-20260811T002700Z",
+      "triggered_at": "2026-08-11T00:27:00Z",
+      "latest_kp": 7.0,
+      "rolling_15m_max_kp": 7.0,
+      "window_start_utc": "2026-08-11T00:12:00Z",
+      "window_end_utc": "2026-08-11T00:27:00Z",
+      "window_minutes": 15.0,
+      "threshold_kp": 6.0,
+      "risk_label": "elevated",
+      "source": "synthetic://kp-threshold-fixture"
+    }
+  ]
+}

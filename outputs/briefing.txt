@@ -1,0 +1,1 @@
+Elevated radio-risk conditions were detected with a latest Kp of 7 and a rolling 15-minute maximum of 7. The UTC window ran from 2026-08-11T00:12:00Z to 2026-08-11T00:27:00Z, and the rule-based risk label was elevated.

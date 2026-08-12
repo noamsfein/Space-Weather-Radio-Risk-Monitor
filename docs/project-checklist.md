@@ -389,27 +389,27 @@ The live NOAA poller is not on the critical path. Build it only after the replay
 
 ## Phase 5 — testing and one-command review path
 
-- [~] **TEST-1 · Complete contract and source tests** · Initials: `NN` · PR: `#24`
+- [x] **TEST-1 · Complete contract and source tests** · Initials: `NN` · PR: `#24`
   - Prerequisites: CONTRACT-1.
   - Branch suffix: `complete-contract-tests`.
   - Test valid source normalization, UTC handling, missing field, malformed time, nonnumeric Kp, NaN/infinity, and Kp outside 0–9.
   - Done when: `pytest -q tests/test_contract.py` passes and each validation rule has a positive or negative case.
 
-- [~] **TEST-2 · Complete window and alert tests** · Initials: `NN` · PR: `#25`
+- [x] **TEST-2 · Complete window and alert tests** · Initials: `NN` · PR: `#25`
   - Prerequisites: PROCESS-2.
   - Branch suffix: `complete-processor-tests`.
   - Test the exact 15-minute boundary, direct jump above 6, still-elevated observations, duplicate timestamp, window expiry, rearm, and second crossing.
   - Done when: exact expected alert count and trigger timestamps match the fixture.
   - Audit 2026-08-12 (NN): every required case is covered in `tests/test_processor.py`; alert count and trigger timestamps are asserted against `data/fixtures/replay_expected.json`. Command: `pytest -q tests/test_processor.py` (13 passed).
 
-- [~] **TEST-3 · Complete output and AI tests** · Initials: `NN` · PR: `#26`
+- [x] **TEST-3 · Complete output and AI tests** · Initials: `NN` · PR: `#26`
   - Prerequisites: OUTPUT-2, AI-4.
   - Branch suffix: `complete-output-ai-tests`.
   - Test JSON/CSV shape, fact agreement, accepted/rejected AI cases, provider failure, and fallback without credentials.
   - Done when: corrupting an output fact, CSV header/count, or candidate response causes a clear focused failure without a live API call.
   - Audit 2026-08-12 (NN): every required case is covered across `tests/test_alert_output.py`, `tests/test_metrics_output.py`, `tests/test_briefing.py`, and `tests/test_evaluate.py`; all AI cases use injected fake clients, and no test makes a live call. Command: `pytest -q tests/test_alert_output.py tests/test_metrics_output.py tests/test_briefing.py tests/test_evaluate.py` (52 passed).
 
-- [~] **DEMO-1 · Build `run_demo.sh`** · Initials: `NN` · PR: `#27`
+- [x] **DEMO-1 · Build `run_demo.sh`** · Initials: `NN` · PR: `#27`
   - Prerequisites: INGEST-1, PROCESS-3, AI-4.
   - Branch suffix: `add-one-command-demo`.
   - Start and wait for Kafka, clear only generated demo artifacts, run the finite consumer and replay in a controlled order, wait for completion, create all four artifacts, and run acceptance tests.
@@ -417,19 +417,21 @@ The live NOAA poller is not on the critical path. Build it only after the replay
   - Print artifact paths and a short result summary.
   - Done when: one command after documented setup runs start to finish, exits nonzero on failure, and three consecutive runs do not reuse stale output or offsets.
 
-- [ ] **E2E-1 · Required end-to-end replay acceptance** · Initials: `____` · PR: `____`
+- [~] **E2E-1 · Required end-to-end replay acceptance** · Initials: `NN` · PR: `pending`
   - Prerequisites: DEMO-1, TEST-1, TEST-2, TEST-3.
   - Branch suffix: `verify-end-to-end-replay`.
   - Run: `./run_demo.sh` through the actual local Kafka broker.
   - Verify: expected alerts; metrics match the fixture; duplicate counts match; briefing is accepted or uses fallback; evaluation matches labels.
   - Save: representative `outputs/` and `evaluation/` artifacts.
   - Done when: both partners independently run it successfully and can trace one record from JSONL to Kafka to alert to briefing.
+  - Niki's run 2026-08-12 (NN): `./run_demo.sh` on merged `main` passed — 9 events through the local broker, 2 alerts at the labeled timestamps, all metrics rows and duplicate counts match the fixture, briefing via deterministic fallback, evaluation 7/7, suite 141 passed. Representative artifacts committed under `outputs/` and `evaluation/`. Awaiting Noam's independent run before checking off.
 
-- [ ] **E2E-2 · Offline/no-key acceptance** · Initials: `____` · PR: `____`
+- [~] **E2E-2 · Offline/no-key acceptance** · Initials: `NN` · PR: `pending`
   - Prerequisites: E2E-1.
   - Branch suffix: `verify-offline-fallback`.
   - Run with `OPENAI_API_KEY` unset and without relying on NOAA.
   - Done when: replay still passes, `briefing.txt` clearly comes from the deterministic fallback, and the README identifies this as the required reviewer path.
+  - Niki's run 2026-08-12 (NN): `env -u OPENAI_API_KEY ./run_demo.sh` passed with identical artifacts; briefing source reported `fallback`, and the README already states no network or API key is required for the required replay review path.
 
 - [ ] **E2E-DATA · Larger replay robustness test — optional after the base path is green** · Initials: `____` · PR: `____`
   - Prerequisites: E2E-1 and E2E-2.
