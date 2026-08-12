@@ -462,33 +462,33 @@ The live NOAA poller is not on the critical path. Build it only after the replay
   - Map any layout differences from the required package structure.
   - Done when: the other partner follows only the README from a clean copy and succeeds.
 
-- [~] **DOC-2 · Finalize source documentation** · Initials: `NN` · PR: `#30`
+- [x] **DOC-2 · Finalize source documentation** · Initials: `NN` · PR: `#30`
   - Prerequisites: DATA-1, plus INGEST-2 or a documented decision to omit it.
   - Complete owner, URL, access, rights, schema, polling/rate-limit assumptions, failures, limitations, cache provenance, and replay details.
   - Done when: every item requested for `DATA_SOURCE.md` by the course handout is easy to locate.
 
-- [~] **DOC-3 · Draw final architecture chart** · Initials: `NN` · PR: `#29`
+- [x] **DOC-3 · Draw final architecture chart** · Initials: `NN` · PR: `#29`
   - Prerequisites: E2E-1.
   - Show the implemented path, not the proposal plan. Separate optional live components from the required replay and Kafka path.
   - Use the same chart in the report and presentation when possible.
   - Done when: one representative event can be traced across every box and every box maps to submitted code or artifacts.
 
-- [~] **REPORT-1 · Draft problem and result section** · Initials: `NN` · PR: `#31`
+- [x] **REPORT-1 · Draft problem and result section** · Initials: `NN` · PR: `#31`
   - Prerequisites: E2E-1.
   - Cover target user, problem, narrow scope, alert rule, and one observable representative result.
   - Done when: it directly supports written-rubric category 1 without marketing language.
 
-- [~] **REPORT-2 · Draft data and contract section** · Initials: `NN` · PR: `#31`
+- [x] **REPORT-2 · Draft data and contract section** · Initials: `NN` · PR: `#31`
   - Prerequisites: DOC-2, CONTRACT-2.
   - Cover source/limitations, raw-to-canonical mapping, validation, topic/key, representative event, dedup identity, and replay provenance.
   - Done when: it directly supports written-rubric category 2.
 
-- [~] **REPORT-3 · Draft architecture and implementation section** · Initials: `NN` · PR: `#31`
+- [x] **REPORT-3 · Draft architecture and implementation section** · Initials: `NN` · PR: `#31`
   - Prerequisites: DOC-3.
   - Cover the end-to-end chart, one real replay example, rolling/crossing logic, outputs, and why a one-topic local Kafka design was chosen.
   - Done when: it directly supports written-rubric category 3 and describes implemented behavior only.
 
-- [~] **REPORT-4 · Draft evidence and reproducibility section** · Initials: `NN` · PR: `#31`
+- [x] **REPORT-4 · Draft evidence and reproducibility section** · Initials: `NN` · PR: `#31`
   - Prerequisites: E2E-2, AI-5.
   - Cover test/evaluation results, bounded AI and verification, exact review path, expected artifacts, fallback, team contributions, limitations, and one realistic next step.
   - Done when: it directly supports written-rubric category 4.
@@ -512,12 +512,12 @@ Do not pursue the optional +3 extension until every row above has complete evide
 
 ## Phase 7 — presentation
 
-- [~] **PRES-1 · Build a short evidence-first deck** · Initials: `NN` · PR: `#32`
+- [x] **PRES-1 · Build a short evidence-first deck** · Initials: `NN` · PR: `#32`
   - Prerequisites: E2E-1, DOC-3.
   - Suggested flow: problem/result; source and representative event; architecture/design choice; replay result and validation; AI boundary/evaluation; lesson, limitation, and next step.
   - Done when: every presentation-rubric category is explicit and the deck does not depend on reading small code.
 
-- [~] **PRES-2 · Prepare stable demo evidence** · Initials: `NN` · PR: `#32`
+- [x] **PRES-2 · Prepare stable demo evidence** · Initials: `NN` · PR: `#32`
   - Prerequisites: E2E-1.
   - Prefer a short replay or saved output. Put backup terminal output or screenshots in the deck.
   - Done when: the story still works if Docker, NOAA, Wi-Fi, or the OpenAI API fails during class.
