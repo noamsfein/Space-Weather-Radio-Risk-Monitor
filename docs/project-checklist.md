@@ -417,7 +417,7 @@ The live NOAA poller is not on the critical path. Build it only after the replay
   - Print artifact paths and a short result summary.
   - Done when: one command after documented setup runs start to finish, exits nonzero on failure, and three consecutive runs do not reuse stale output or offsets.
 
-- [~] **E2E-1 · Required end-to-end replay acceptance** · Initials: `NN` · PR: `pending`
+- [~] **E2E-1 · Required end-to-end replay acceptance** · Initials: `NN` · PR: `#28`
   - Prerequisites: DEMO-1, TEST-1, TEST-2, TEST-3.
   - Branch suffix: `verify-end-to-end-replay`.
   - Run: `./run_demo.sh` through the actual local Kafka broker.
@@ -426,7 +426,7 @@ The live NOAA poller is not on the critical path. Build it only after the replay
   - Done when: both partners independently run it successfully and can trace one record from JSONL to Kafka to alert to briefing.
   - Niki's run 2026-08-12 (NN): `./run_demo.sh` on merged `main` passed — 9 events through the local broker, 2 alerts at the labeled timestamps, all metrics rows and duplicate counts match the fixture, briefing via deterministic fallback, evaluation 7/7, suite 141 passed. Representative artifacts committed under `outputs/` and `evaluation/`. Awaiting Noam's independent run before checking off.
 
-- [~] **E2E-2 · Offline/no-key acceptance** · Initials: `NN` · PR: `pending`
+- [~] **E2E-2 · Offline/no-key acceptance** · Initials: `NN` · PR: `#28`
   - Prerequisites: E2E-1.
   - Branch suffix: `verify-offline-fallback`.
   - Run with `OPENAI_API_KEY` unset and without relying on NOAA.
