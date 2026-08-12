@@ -1,0 +1,162 @@
+<title>Radio-Risk Demo UI</title>
+<style>
+  * { box-sizing: border-box; }
+  body {
+    font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+    margin: 0; background: #fbfaf7; color: #1c1c1c;
+  }
+  .preview-banner {
+    background: #b3402e; color: #fff; padding: 10px 28px; font-size: 13px;
+  }
+  .preview-banner b { letter-spacing: 0.04em; }
+  header { background: #14324f; color: #fff; padding: 18px 28px; }
+  header h1 { margin: 0; font-size: 22px; }
+  header p { margin: 6px 0 0; color: #b9c8d8; font-size: 13px; }
+  main { max-width: 980px; margin: 0 auto; padding: 20px 28px 60px; }
+  section { margin: 26px 0; }
+  h2 { font-size: 16px; color: #14324f; border-bottom: 2px solid #e2ddd2; padding-bottom: 6px; }
+  code { font-family: Menlo, Consolas, monospace; background: #ece8e0; padding: 0 4px; border-radius: 3px; font-size: 0.92em; color: #1c1c1c; }
+  header code, .preview-banner code { background: rgba(255,255,255,0.15); color: #fff; }
+  .chips { display: flex; gap: 10px; flex-wrap: wrap; }
+  .chip {
+    background: #fff; border: 1px solid #d5cfc2; border-radius: 10px;
+    padding: 10px 16px; text-align: center; min-width: 110px;
+  }
+  .chip b { display: block; font-size: 22px; color: #14324f; font-variant-numeric: tabular-nums; }
+  .chip span { font-size: 12px; color: #666; }
+  .card {
+    background: #fff; border: 1px solid #d5cfc2; border-left: 6px solid #b3402e;
+    border-radius: 8px; padding: 12px 16px; margin: 10px 0; font-size: 14px;
+  }
+  .card b { color: #b3402e; }
+  .table-wrap { overflow-x: auto; }
+  table { border-collapse: collapse; width: 100%; font-size: 13px; background: #fff; font-variant-numeric: tabular-nums; }
+  th, td { border: 1px solid #d5cfc2; padding: 6px 9px; text-align: left; white-space: nowrap; }
+  th { background: #ece8e0; }
+  tr.alert-row { background: #e4f4e4; font-weight: 700; }
+  tr.dup-row { background: #fdf3dd; }
+  .briefing {
+    background: #14181d; color: #ffb454; border-radius: 8px;
+    padding: 14px 18px; font-size: 15px; line-height: 1.5;
+  }
+  .badge {
+    display: inline-block; border-radius: 99px; padding: 2px 12px;
+    font-size: 12px; font-weight: 700; margin-left: 8px; vertical-align: middle;
+  }
+  .badge.fallback { background: #ece8e0; color: #555; }
+  .badge.model { background: #dcecdc; color: #1e6329; }
+  button {
+    background: #14324f; color: #fff; border: 0; border-radius: 8px;
+    padding: 12px 22px; font-size: 15px; cursor: pointer;
+  }
+  button:focus-visible { outline: 3px solid #ffb454; outline-offset: 2px; }
+  .muted { color: #777; font-size: 13px; }
+  ul.checks { list-style: none; padding: 0; font-size: 13px; }
+  ul.checks li { margin: 3px 0; }
+  ul.checks li::before { content: "✓ "; color: #1e6329; font-weight: 700; }
+  .note {
+    background: #fdf8f1; border: 1px dashed #a05a2c; border-radius: 8px;
+    padding: 10px 14px; font-size: 13px; color: #6d4a2f;
+  }
+</style>
+
+<div class="preview-banner"><b>STATIC PREVIEW</b> — this is a snapshot of the local page from PR #33 with real run data baked in.
+The actual page is served by <code>python -m src.demo_ui</code> on the reviewer's own machine; nothing here talks to Kafka or OpenAI.</div>
+
+<header>
+  <h1>Space Weather Radio-Risk Monitor — Demo UI</h1>
+  <p>Optional presentation layer. It only displays what the required pipeline
+  (<code>./run_demo.sh</code>: replay → Kafka → rolling window → artifacts) already produced.</p>
+</header>
+
+<main>
+  <div class="note">The graded review path is the terminal command, not this page.
+  Every number below comes from <code>outputs/</code> and <code>evaluation/</code> of the verified 2026-08-12 run.</div>
+
+  <section>
+    <h2>Run counts (outputs/alert.json)</h2>
+    <div class="chips">
+      <div class="chip"><b>9</b><span>messages consumed</span></div>
+      <div class="chip"><b>8</b><span>unique events</span></div>
+      <div class="chip"><b>1</b><span>duplicates skipped</span></div>
+      <div class="chip"><b>0</b><span>late skipped</span></div>
+      <div class="chip"><b>2</b><span>alerts emitted</span></div>
+    </div>
+  </section>
+
+  <section>
+    <h2>Alerts</h2>
+    <div class="card"><b>kp-alert-20260811T001000Z</b> — rolling 15-min max Kp <b>6.3</b> at 2026-08-11T00:10:00Z
+      (window 2026-08-10T23:55:00Z → 2026-08-11T00:10:00Z, threshold 6.0, label elevated)</div>
+    <div class="card"><b>kp-alert-20260811T002700Z</b> — rolling 15-min max Kp <b>7.0</b> at 2026-08-11T00:27:00Z
+      (window 2026-08-11T00:12:00Z → 2026-08-11T00:27:00Z, threshold 6.0, label elevated)</div>
+  </section>
+
+  <section>
+    <h2>Every consumed Kafka message (outputs/metrics.csv)</h2>
+    <div class="table-wrap">
+    <table>
+      <tr><th>time_tag</th><th>kp_value</th><th>rolling_15m_max_kp</th><th>risk_label</th><th>alert_emitted</th><th>processing_status</th></tr>
+      <tr><td>2026-08-11T00:00:00Z</td><td>4.0</td><td>4.0</td><td>normal</td><td>false</td><td>accepted</td></tr>
+      <tr><td>2026-08-11T00:05:00Z</td><td>5.0</td><td>5.0</td><td>normal</td><td>false</td><td>accepted</td></tr>
+      <tr class="alert-row"><td>2026-08-11T00:10:00Z</td><td>6.3</td><td>6.3</td><td>elevated</td><td>true</td><td>accepted</td></tr>
+      <tr class="dup-row"><td>2026-08-11T00:10:00Z</td><td>6.3</td><td>6.3</td><td>elevated</td><td>false</td><td>duplicate_skipped</td></tr>
+      <tr><td>2026-08-11T00:20:00Z</td><td>5.5</td><td>6.3</td><td>elevated</td><td>false</td><td>accepted</td></tr>
+      <tr><td>2026-08-11T00:25:00Z</td><td>5.2</td><td>6.3</td><td>elevated</td><td>false</td><td>accepted</td></tr>
+      <tr><td>2026-08-11T00:26:00Z</td><td>5.0</td><td>5.5</td><td>normal</td><td>false</td><td>accepted</td></tr>
+      <tr class="alert-row"><td>2026-08-11T00:27:00Z</td><td>7.0</td><td>7.0</td><td>elevated</td><td>true</td><td>accepted</td></tr>
+      <tr><td>2026-08-11T00:30:00Z</td><td>6.7</td><td>7.0</td><td>elevated</td><td>false</td><td>accepted</td></tr>
+    </table>
+    </div>
+  </section>
+
+  <section>
+    <h2>Briefing (outputs/briefing.txt) <span id="briefing-badge"><span class="badge fallback">deterministic fallback</span></span></h2>
+    <div class="briefing" id="briefing">Elevated radio-risk conditions were detected with a latest Kp of 7 and a rolling 15-minute maximum of 7. The UTC window ran from 2026-08-11T00:12:00Z to 2026-08-11T00:27:00Z, and the rule-based risk label was elevated.</div>
+    <p style="margin-top:14px">
+      <button id="live-button">Generate Live AI Briefing</button>
+      <span class="muted">In this preview the click replays the response from a real click on 2026-08-12,
+      which passed all six validation checks. On the local page this sends the five approved facts to OpenAI live.</span>
+    </p>
+    <div id="live-result"></div>
+  </section>
+
+  <section>
+    <h2>Evaluation (evaluation/evaluation.json)</h2>
+    <div class="chips">
+      <div class="chip"><b>7/7</b><span>assertions passed</span></div>
+      <div class="chip"><b>6/6</b><span>AI cases as expected</span></div>
+      <div class="chip"><b>PASS</b><span>overall</span></div>
+    </div>
+  </section>
+
+  <section>
+    <h2>Run it yourself</h2>
+    <div class="note">
+      <code>git switch niki/add-optional-demo-ui</code> →
+      <code>./run_demo.sh</code> →
+      <code>python -m src.demo_ui</code> →
+      open <code>http://127.0.0.1:8765</code>.
+      No Confluent or cloud account — Kafka is the local Docker broker; the only optional credential is your own OpenAI key in <code>.env</code>.
+    </div>
+  </section>
+</main>
+
+<script>
+document.getElementById("live-button").addEventListener("click", () => {
+  document.getElementById("briefing").textContent =
+    "Risk label: elevated. Latest KP is 7.0 and the rolling 15-minute max KP is 7.0 within the window from 2026-08-11T00:12:00Z to 2026-08-11T00:27:00Z.";
+  document.getElementById("briefing-badge").innerHTML =
+    '<span class="badge model">live model (validated) — replayed</span>';
+  document.getElementById("live-result").innerHTML =
+    '<p class="muted">Model: gpt-5-nano · fallback reason: none · response replayed from the real 2026-08-12 click</p>' +
+    '<ul class="checks">' +
+    '<li>nonempty: candidate contains text</li>' +
+    '<li>sentence_limit: candidate contains 2 sentence(s); maximum is 2</li>' +
+    '<li>risk_label: candidate uses approved label ‘elevated’</li>' +
+    '<li>approved_numbers: all numeric values match approved Kp facts or the named 15-minute window</li>' +
+    '<li>approved_timestamps: all supplied timestamps match the approved UTC window</li>' +
+    '<li>unsupported_details: no unsupported cause, location, impact, or recommendation found</li>' +
+    '</ul>';
+});
+</script>
