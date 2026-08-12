@@ -160,6 +160,15 @@ The cached replay is the required review path. The live poller is useful but may
 
 Dependencies will be pinned in `requirements.txt`. Secrets belong in a local `.env`, which must never be submitted. `.env.example` will contain blank variable names only.
 
+The local broker uses the official `apache/kafka:4.1.2` image in single-node KRaft mode. Docker Compose exposes it at `localhost:9092`; Kafka does not need to be installed separately. Its state is disposable: restarting the same container preserves it, while removing and recreating the container starts a clean broker. Start and inspect it with:
+
+```bash
+docker compose up -d
+docker compose ps
+```
+
+Wait for the `kafka` service to report `healthy` before running Kafka clients. The project uses one partition for `kp_observations` so the single planetary event sequence remains ordered. Remove the local broker and its project data with `docker compose down -v`.
+
 ## Planned repository layout
 
 ```text
