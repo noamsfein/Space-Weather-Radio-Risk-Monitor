@@ -98,6 +98,7 @@ Before submission, add actual development uses to this log rather than making a 
 | 2026-08-12 | Codex | Configured the local Kafka broker | Noam chose Docker over Confluent Cloud; the project uses one official Kafka image and no extra services | Validated Compose, broker health, topic access, message round-trip, restart, and cleanup |
 | 2026-08-12 | Codex | Implemented the canonical Kafka event contract | Noam retained the agreed four fields, documented provenance allowlist, and strict validation boundary | Tested every committed NOAA/replay/invalid fixture plus timestamp, Kp, schema, serialization, and immutability edge cases |
 | 2026-08-12 | Codex | Froze the representative Kafka event | Noam selected the first synthetic Kp 6.3 crossing because it connects the event contract to the demonstrated alert | Tested the saved event against `KpEvent`, the replay source row, and the README copy |
+| 2026-08-12 | Codex | Implemented reusable Kafka I/O | Noam retained one local broker, topic, partition, and constant key for the ordered global stream | Ran unit failure cases and a real Docker produce/consume round-trip before and after a clean broker restart |
 | YYYY-MM-DD | Tool/model | Describe the specific task | Describe the human decision or edit | Name the test, review, or evidence |
 
 ## Known limitations
