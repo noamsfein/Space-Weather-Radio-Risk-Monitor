@@ -45,7 +45,7 @@ Most of this checklist is normal repository work that can be implemented and tes
   - Assigned to: Niki Naderzad (`nnaderzad`). Niki must enter `NN` herself after completing and verifying the task.
   - Prerequisites: Noam has invited Niki to the `MSDS` OpenAI API organization and added her to the `Space Weather Radio Risk` project after she accepts.
   - Follow: `docs/niki-openai-setup.md` from beginning to end.
-  - Create locally: `.env` copied from `.env.example`, with Niki's own project key and a blank `OPENAI_MODEL` until AI-2 selects the exact model.
+  - Create locally: `.env` copied from `.env.example`, with Niki's own project key and `OPENAI_MODEL=gpt-5-nano`.
   - Never share the key with Noam or commit it. Verify with `git check-ignore -v .env` and `git status --short`.
   - Done when: Niki can select the shared project, has her own privately stored key, confirms `.env` is ignored, and messages Noam that setup is complete. Live-call verification happens after AI-2 is merged.
 
