@@ -455,7 +455,7 @@ The live NOAA poller is not on the critical path. Build it only after the replay
   - Map any layout differences from the required package structure.
   - Done when: the other partner follows only the README from a clean copy and succeeds.
 
-- [ ] **DOC-2 · Finalize source documentation** · Initials: `____` · PR: `____`
+- [~] **DOC-2 · Finalize source documentation** · Initials: `NN` · PR: `#30`
   - Prerequisites: DATA-1, plus INGEST-2 or a documented decision to omit it.
   - Complete owner, URL, access, rights, schema, polling/rate-limit assumptions, failures, limitations, cache provenance, and replay details.
   - Done when: every item requested for `DATA_SOURCE.md` by the course handout is easy to locate.
