@@ -40,6 +40,7 @@ Show both of these, but do not confuse their purposes:
 
 - `data/sample_or_replay_data/noaa_raw_sample.json` contains records captured from the real public NOAA SWPC one-minute estimated planetary Kp feed. Use one record to establish the authentic source and raw schema.
 - `data/sample_or_replay_data/kp_replay.jsonl` is a project-created, deterministic threshold fixture. It is clearly labeled `synthetic://kp-threshold-fixture`. Use it to demonstrate alert, duplicate, window-expiry, and rearming behavior on demand.
+- `data/fixtures/representative_event.json` is the authoritative canonical record for the README, report, and presentation. Show this Kp 6.3 event and trace it through Kafka to the first alert.
 
 Never describe the synthetic fixture as NOAA history, a forecast, or an official NOAA alert. The project is a streaming monitor, not a forecasting model.
 
@@ -58,6 +59,8 @@ The replay contains nine messages representing eight unique event timestamps:
 | 00:26 | 5.0 | The 6.3 event has expired; rolling maximum is 5.5 and the alert rearms. |
 | 00:27 | 7.0 | New crossing after rearming; emit alert 2. |
 | 00:30 | 6.7 | Still elevated; emit no duplicate alert. |
+
+The `00:10` Kp 6.3 row is the frozen representative event. Publish it with Kafka key `planetary_kp`, then connect it to the first alert while explaining the architecture.
 
 Expected final counts:
 

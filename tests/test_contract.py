@@ -99,6 +99,40 @@ def test_serializes_exact_four_field_contract_with_z_suffix() -> None:
     assert serialized["ingested_at"] == "2026-08-11T00:10:05Z"
 
 
+def test_representative_event_matches_contract_and_first_replay_crossing() -> None:
+    representative_path = PROJECT_ROOT / "data/fixtures/representative_event.json"
+    representative_raw = json.loads(representative_path.read_text())
+    representative = KpEvent.model_validate(representative_raw)
+    replay_records = jsonl_records("data/sample_or_replay_data/kp_replay.jsonl")
+    first_crossing = next(record for record in replay_records if record["kp_value"] >= 6)
+
+    assert representative_raw == first_crossing
+    assert representative.model_dump(mode="json") == representative_raw
+    assert list(representative_raw) == [
+        "time_tag",
+        "kp_value",
+        "source",
+        "ingested_at",
+    ]
+    assert representative.kp_value == 6.3
+    assert representative.source == SYNTHETIC_REPLAY_SOURCE
+
+
+def test_readme_embeds_the_authoritative_representative_event() -> None:
+    representative = json.loads(
+        (PROJECT_ROOT / "data/fixtures/representative_event.json").read_text()
+    )
+    readme = (PROJECT_ROOT / "README.md").read_text()
+    demo_plan = (PROJECT_ROOT / "docs/demo-plan.md").read_text()
+    exact_json_block = json.dumps(representative, indent=2)
+
+    assert exact_json_block in readme
+    assert "data/fixtures/representative_event.json" in readme
+    assert "data/fixtures/representative_event.json" in demo_plan
+    assert "synthetic" in readme.lower()
+    assert list(KpEvent.model_fields) == list(representative)
+
+
 @pytest.mark.parametrize(
     ("record", "expected_error"),
     [

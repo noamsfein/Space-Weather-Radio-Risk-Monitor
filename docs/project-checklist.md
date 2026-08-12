@@ -264,7 +264,7 @@ The live NOAA poller is not on the critical path. Build it only after the replay
   - The valid fixture must include below-threshold values, a first crossing, still-elevated non-duplicates, a return below threshold after window expiry, a second crossing, and one duplicate timestamp.
   - Done when: every JSON/JSONL file parses, expected rolling maxima and alert timestamps are recorded, and the synthetic source identifier is distinct from the NOAA endpoint.
 
-- [~] **CONTRACT-1 · Implement the canonical Pydantic event** · Initials: `NF` · PR: `#6`
+- [x] **CONTRACT-1 · Implement the canonical Pydantic event** · Initials: `NF` · PR: `#6`
   - Prerequisites: DATA-1.
   - Branch suffix: `add-event-contract`.
   - Create: `src/contract.py` with `time_tag`, `kp_value`, `source`, and `ingested_at`.
@@ -272,7 +272,7 @@ The live NOAA poller is not on the critical path. Build it only after the replay
   - Tests: accept representative raw and replay records; reject missing fields, malformed timestamps, nonnumeric Kp, and out-of-range values.
   - Done when: `pytest -q tests/test_contract.py` passes and the representative event serializes to the documented four-field contract.
 
-- [ ] **CONTRACT-2 · Freeze a representative event** · Initials: `____` · PR: `____`
+- [~] **CONTRACT-2 · Freeze a representative event** · Initials: `NF` · PR: `pending`
   - Prerequisites: CONTRACT-1.
   - Branch suffix: `document-event-contract`.
   - Save: one representative canonical JSON record for the README, report, and presentation.

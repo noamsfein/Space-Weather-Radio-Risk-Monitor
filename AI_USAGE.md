@@ -97,6 +97,7 @@ Before submission, add actual development uses to this log rather than making a 
 | 2026-08-12 | Codex | Scaffolded the repository and configured the Python environment | Noam chose local Docker Kafka and kept the dependency set limited to the planned implementation | Installed from scratch with Python 3.11 and ran dependency smoke tests without secrets |
 | 2026-08-12 | Codex | Configured the local Kafka broker | Noam chose Docker over Confluent Cloud; the project uses one official Kafka image and no extra services | Validated Compose, broker health, topic access, message round-trip, restart, and cleanup |
 | 2026-08-12 | Codex | Implemented the canonical Kafka event contract | Noam retained the agreed four fields, documented provenance allowlist, and strict validation boundary | Tested every committed NOAA/replay/invalid fixture plus timestamp, Kp, schema, serialization, and immutability edge cases |
+| 2026-08-12 | Codex | Froze the representative Kafka event | Noam selected the first synthetic Kp 6.3 crossing because it connects the event contract to the demonstrated alert | Tested the saved event against `KpEvent`, the replay source row, and the README copy |
 | YYYY-MM-DD | Tool/model | Describe the specific task | Describe the human decision or edit | Name the test, review, or evidence |
 
 ## Known limitations
