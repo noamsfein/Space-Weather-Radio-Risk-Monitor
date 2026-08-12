@@ -6,7 +6,7 @@ Kafka-based final project for MSDS 682, Data Stream Processing (Summer 2026).
 
 **Approved proposal:** [`output/pdf/final_project_proposal_nsfein_nnaderzad.pdf`](output/pdf/final_project_proposal_nsfein_nnaderzad.pdf)
 
-**Current status:** Planning and initial setup. The commands and artifacts described below are the agreed implementation target. Check [the team checklist](docs/project-checklist.md) for current progress; do not assume the demo works until its end-to-end acceptance task is checked off. The presentation scenario and backup procedure are in [the demo plan](docs/demo-plan.md).
+**Current status:** Implemented and verified. Every command in this README has been run as written; `./run_demo.sh` passes end-to-end through the local Kafka broker, with and without an OpenAI key. Task-level progress and evidence are tracked in [the team checklist](docs/project-checklist.md). The presentation scenario and backup procedure are in [the demo plan](docs/demo-plan.md).
 
 **Repository:** `https://github.com/noamsfein/Space-Weather-Radio-Risk-Monitor`. This directory now has its own Git root and `main` tracks the project repository rather than the unrelated home-directory repository.
 
@@ -30,7 +30,7 @@ The minimum result is deliberately small:
 
 The target user is an amateur-radio operator who wants a short, machine-readable indication of elevated geomagnetic conditions.
 
-The required local demo will create:
+The required local demo creates:
 
 - `outputs/alert.json` — the threshold-crossing alert and supporting facts;
 - `outputs/metrics.csv` — each processed observation, rolling maximum, rule-based label, and whether an alert was emitted;
@@ -39,17 +39,20 @@ The required local demo will create:
 
 ## Scope
 
-### In scope
+### In scope (implemented)
 
-- Polling NOAA's public near-real-time JSON feed every 60 seconds.
-- Deterministic replay from a cached, attributed NOAA JSONL sample.
-- Validation and normalization into one Kafka event contract.
+- Deterministic replay of a labeled synthetic threshold fixture through real Kafka.
+- Validation and normalization into one Kafka event contract, shared by cached NOAA records and replay records.
 - Publication to `kp_observations` with the constant key `planetary_kp`.
 - Deduplication by `time_tag`.
 - A rolling 15-minute event-time maximum.
 - One alert on each below-threshold to at-or-above-threshold crossing.
 - Automated alert tests and saved evaluation evidence.
 - A fact-constrained, two-sentence AI briefing with a no-key fallback.
+
+### Deliberately omitted
+
+The optional 60-second live NOAA poller (checklist task `INGEST-2`) was not built. The checklist keeps it off the critical path, and the team prioritized the required deterministic replay, evidence, and presentation instead. The committed NOAA sample and dated source profile prove the endpoint's shape and viability; the contract's `normalize_noaa_record` already converts a raw NOAA record into the same canonical event the replay uses, so a poller could be added later without changing the contract, topic, or consumer.
 
 ### Out of scope
 
@@ -118,8 +121,9 @@ python -m src.replay_producer
 
 The consumer stops after nine valid events, writes `outputs/alert.json` and
 `outputs/metrics.csv`, skips malformed messages with a visible warning, and fails
-if the next valid event does not arrive within 15 seconds. Task `DEMO-1` will wrap
-these commands in the final one-command demo script.
+if the next valid event does not arrive within 15 seconds. `./run_demo.sh` wraps
+these commands, so the manual two-terminal path is only needed for debugging or
+a slowed-down presentation replay.
 
 ## Alert behavior
 
@@ -135,53 +139,68 @@ No duplicate alert is emitted while a Kp 6-or-higher observation remains inside 
 
 ## Architecture
 
+This chart shows the implemented path, exercised end to end by `./run_demo.sh`. Optional components that require credentials or the network are marked and are never on the required path.
+
 ```text
-NOAA live JSON                 Cached NOAA JSONL + labeled fixtures
-      |                                      |
-      +---------------+----------------------+
-                      |
-            poller or replay producer
-                      |
-        validate + normalize event contract
+REQUIRED REPLAY PATH (no network, no API key)
+
+  data/sample_or_replay_data/kp_replay.jsonl     [labeled synthetic fixture]
                       |
                       v
-        Kafka: kp_observations
-        key: planetary_kp
+  src/replay_producer.py — validate every record (src/contract.py),
+  reject disorder, publish in event-time order
                       |
                       v
-     consumer: deduplicate by time_tag
-     + rolling 15-minute maximum
-     + first Kp >= 6 crossing rule
+        Kafka topic: kp_observations  (1 partition, local Docker broker)
+        message key: planetary_kp
+                      |
+                      v
+  src/stream_processor.py — finite consumer
+        src/processor.py: deduplicate by time_tag
+        + rolling 15-minute event-time maximum (inclusive)
+        + alert on below-6 to at-or-above-6 crossing, rearm below 6
                       |
              +--------+---------+
-             |                  |
              v                  v
-       alert.json          metrics.csv
+   outputs/alert.json    outputs/metrics.csv
              |
              v
-     bounded AI briefing -> automatic fact checks
+  src/briefing.py — deterministic two-sentence template
+  from the five approved alert facts
              |
-             +----> briefing.txt + evaluation.json
-                         |
-                         v
-               deterministic fallback
+             v
+   outputs/briefing.txt
+             |
+             v
+  src/evaluate.py — expected-vs-actual alerts + six fixed
+  briefing acceptance cases
+             |
+             v
+   evaluation/evaluation.json
+
+OPTIONAL, OFF THE REQUIRED PATH
+  - live OpenAI briefing (python -m src.briefing --use-live-ai): needs a
+    private key in .env; the candidate must pass the same fact checks or
+    the deterministic fallback is used
+  - live NOAA poller: deliberately omitted (see Scope); the committed
+    NOAA sample proves the raw-to-canonical mapping instead
 ```
 
-The cached replay is the required review path. The live poller is useful but may be removed from the final scope if it threatens the reproducible demo.
+One representative event can be traced across every box: the record at `data/fixtures/representative_event.json` enters the replay, is published with key `planetary_kp`, raises the rolling maximum to 6.3, emits the first alert in `alert.json` and the matching `alert_emitted` row in `metrics.csv`, and supplies the facts in `briefing.txt` that `evaluation.json` checks.
 
-## Planned technology
+## Technology
 
 | Tool | Responsibility |
 |---|---|
 | Python 3.11 | Application and tests |
-| `requests` | NOAA HTTP polling |
 | Pydantic | Canonical event validation |
 | `confluent-kafka` | Kafka producer and consumer |
 | Docker Compose | Local Kafka broker |
 | `pytest` | Unit and integration acceptance tests |
 | OpenAI API | Optional two-sentence briefing only |
+| `python-dotenv` | Loading the optional private `.env` for the live briefing |
 
-Dependencies will be pinned in `requirements.txt`. Secrets belong in a local `.env`, which must never be submitted. `.env.example` contains no credentials and preselects the shared, non-secret model name `gpt-5-nano`.
+Dependencies are pinned in `requirements.txt` (`requests` remains pinned there for the one-time source-viability check even though the runtime path does not poll NOAA). Secrets belong in a local `.env`, which must never be submitted. `.env.example` contains no credentials and preselects the shared, non-secret model name `gpt-5-nano`.
 
 Niki's one-time shared-project and private-key setup is documented in
 [`docs/niki-openai-setup.md`](docs/niki-openai-setup.md). Each partner uses a
@@ -197,7 +216,7 @@ docker compose ps
 
 Wait for the `kafka` service to report `healthy` before running Kafka clients. The project uses one partition for `kp_observations` so the single planetary event sequence remains ordered. Remove the local broker and its project data with `docker compose down -v`.
 
-## Planned repository layout
+## Repository layout
 
 ```text
 .
@@ -209,58 +228,94 @@ Wait for the `kafka` service to report `healthy` before running Kafka clients. T
 ├── docker-compose.yml
 ├── run_demo.sh
 ├── src/
-│   ├── settings.py
-│   ├── contract.py
-│   ├── kafka_io.py
-│   ├── replay_producer.py
-│   ├── live_poller.py
-│   ├── processor.py
-│   ├── outputs.py
-│   ├── stream_processor.py
-│   ├── briefing.py
-│   └── evaluate.py
+│   ├── contract.py          # canonical KpEvent + NOAA normalization
+│   ├── kafka_io.py          # shared producer/consumer/topic helpers
+│   ├── replay_producer.py   # validated JSONL replay through Kafka
+│   ├── processor.py         # dedup + rolling window + crossing rule
+│   ├── alert_output.py      # writes outputs/alert.json
+│   ├── metrics_output.py    # writes outputs/metrics.csv
+│   ├── stream_processor.py  # finite Kafka consumer wiring it together
+│   ├── briefing.py          # deterministic + optional live briefing
+│   └── evaluate.py          # deterministic evaluation evidence
 ├── data/
-│   ├── sample_or_replay_data/
-│   └── fixtures/
-├── outputs/
-│   └── representative_result
-├── evaluation/
-│   └── validation_or_eval_artifact
+│   ├── sample_or_replay_data/   # raw NOAA sample, source profile, replay
+│   └── fixtures/                # expected results, invalid records,
+│                                # representative event
+├── outputs/                 # alert.json, metrics.csv, briefing.txt
+├── evaluation/              # evaluation.json (+ optional live candidate)
 ├── tests/
 ├── docs/
 │   └── project-checklist.md
 └── report.pdf
 ```
 
-The detailed task sequence, prerequisites, and acceptance checks are in [docs/project-checklist.md](docs/project-checklist.md). Equivalent internal helper names are acceptable if the README is updated to map them clearly. Changes to a public field, artifact, command, topic, key, threshold, or window must be reflected in the documentation and tests.
+Differences from the proposal's planned layout: `outputs.py` became the two focused writers `alert_output.py` and `metrics_output.py`; `settings.py` was unnecessary because configuration lives in explicit constants and CLI flags; and `live_poller.py` was deliberately omitted with the live poller (see Scope). The detailed task sequence, prerequisites, and acceptance checks are in [docs/project-checklist.md](docs/project-checklist.md). Changes to a public field, artifact, command, topic, key, threshold, or window must be reflected in the documentation and tests.
 
 ## Local review path
 
-The final reviewer path will be:
+This is the required reviewer path. It needs no NOAA access, no OpenAI key, and no network beyond `localhost`. All commands below have been run as written on macOS with Docker Desktop.
+
+Prerequisites: Git, Python 3.11, and Docker Desktop with `docker compose` v2. Docker Desktop must be running before the demo starts.
 
 ```bash
 python3.11 -m venv .venv
 source .venv/bin/activate
 pip install -r requirements.txt
-cp .env.example .env
+cp .env.example .env   # optional; only needed for the live-AI extra
 ./run_demo.sh
 ```
 
-`./run_demo.sh` is the one required demo command after setup. It must use cached data, start or verify Kafka, run the replay through the real Kafka producer and consumer, write fresh artifacts, run validation, and exit with a nonzero status if an acceptance check fails.
+`./run_demo.sh` is the one required demo command after setup. It:
 
-These are target commands until task `E2E-1` in the checklist is complete. The final README must show the commands actually tested on a clean machine.
+1. verifies Docker, Compose, and the Python dependencies, with a clear message if one is missing;
+2. resets the local broker (`docker compose down -v`, then `up -d --wait`) so no run can reuse stale topics or consumer offsets;
+3. deletes only the four generated artifacts;
+4. starts the finite consumer in the background, publishes the nine-message replay through the real Kafka producer, and waits for the consumer;
+5. writes the deterministic briefing and the evaluation evidence;
+6. verifies every artifact field against `data/fixtures/replay_expected.json`; and
+7. runs the automated test suite.
 
-Expected success criteria:
+It exits nonzero, printing the consumer log, if any step fails. A successful run ends with:
 
-- at least one labeled Kp 6-or-higher crossing produces exactly one matching alert;
+```text
+Processed 9 valid event(s); skipped 0 malformed; emitted 2 alert(s)
+...
+Artifacts match the labeled fixture: 2 alert(s), 9 metrics row(s), briefing present, evaluation 7/7 assertions passed.
+...
+141 passed, 3 skipped in ...s
+
+Demo complete. Artifacts:
+  outputs/alert.json
+  outputs/metrics.csv
+  outputs/briefing.txt
+  evaluation/evaluation.json
+```
+
+The three skipped tests are the Kafka integration tests, which are opt-in so `pytest` never depends on Docker. To run them against a clean broker:
+
+```bash
+docker compose down -v && docker compose up -d --wait kafka
+RUN_KAFKA_INTEGRATION=1 pytest -q tests/test_kafka_integration.py \
+  tests/test_replay_integration.py tests/test_stream_processor_integration.py
+```
+
+Verified success criteria:
+
+- the labeled fixture's two Kp 6-or-higher crossings produce exactly two alerts, at `2026-08-11T00:10:00Z` and `2026-08-11T00:27:00Z`;
 - repeated and still-elevated observations do not create duplicate alerts;
-- `metrics.csv` contains the expected rolling maximum for every valid fixture;
-- invalid and duplicate records are counted or rejected as documented;
+- `metrics.csv` contains the expected rolling maximum for every fixture row, including one `duplicate_skipped` row;
 - briefing facts match the deterministic alert facts, or the fallback is used;
 - all automated tests pass; and
-- no network connection or API key is required for the required replay review path.
+- no network connection or API key is required (`env -u OPENAI_API_KEY ./run_demo.sh` passes identically, with `briefing.txt` from the deterministic fallback).
 
-Planned cleanup command:
+Troubleshooting:
+
+- `DEMO FAILED: Docker is not running` — open Docker Desktop and rerun.
+- `Kafka broker did not become healthy` — check `docker compose ps` and port `9092`; another local broker or an old container can hold the port (`docker compose down -v` then rerun).
+- `Python dependencies missing` — activate the virtual environment and rerun `pip install -r requirements.txt`.
+- A `Coordinator load in progress: retrying` line from the producer on a fresh broker is normal; the idempotent producer retries and the run continues.
+
+Cleanup:
 
 ```bash
 docker compose down -v
@@ -357,8 +412,8 @@ Replace the example branch with the actual owner and task. The other partner rev
 
 - Presentation: Thursday, August 13, 2026, 5:40–5:48 PM PDT. Seven minutes plus one minute of Q&A; both team members must speak.
 - Written report and code ZIP: Friday, August 14, 2026, 11:59 PM PDT.
-- Planned ZIP name: `final_project_nsfein_nnaderzad.zip`.
-- Planned top-level folder: `final_project_nsfein_nnaderzad/`.
+- ZIP name: `final_project_nsfein_nnaderzad.zip`.
+- Top-level folder: `final_project_nsfein_nnaderzad/`.
 
 The detailed implementation, presentation, report, clean-room review, and packaging steps are tracked in [docs/project-checklist.md](docs/project-checklist.md).
 
