@@ -447,7 +447,7 @@ The live NOAA poller is not on the critical path. Build it only after the replay
   - Demonstrate a controlled broker/process failure and recovery using the same input, with exact reviewer steps and saved evidence.
   - Done when: it is a working, clearly labeled extension with exact commands and saved output. Skip it if any base requirement remains incomplete.
 
-- [~] **UI-1 · Optional local demo UI — presentation layer only, agreed 2026-08-12** · Initials: `NN` · PR: `#33`
+- [x] **UI-1 · Optional local demo UI — presentation layer only, agreed 2026-08-12** · Initials: `NN` · PR: `#33`
   - Prerequisites: E2E-1 and E2E-2 (the base path stayed untouched and green).
   - Branch suffix: `add-optional-demo-ui`.
   - Scope note: the guardrails exclude a dashboard from the required product; this task adds `src/demo_ui.py` only as a clearly labeled optional viewer of already-generated artifacts, agreed by both partners via this PR's review. It adds no dependencies, binds to `127.0.0.1` only, and never appears in the required review path.
