@@ -505,12 +505,12 @@ Do not pursue the optional +3 extension until every row above has complete evide
 
 ## Phase 7 — presentation
 
-- [ ] **PRES-1 · Build a short evidence-first deck** · Initials: `____` · PR: `____`
+- [~] **PRES-1 · Build a short evidence-first deck** · Initials: `NN` · PR: `#32`
   - Prerequisites: E2E-1, DOC-3.
   - Suggested flow: problem/result; source and representative event; architecture/design choice; replay result and validation; AI boundary/evaluation; lesson, limitation, and next step.
   - Done when: every presentation-rubric category is explicit and the deck does not depend on reading small code.
 
-- [ ] **PRES-2 · Prepare stable demo evidence** · Initials: `____` · PR: `____`
+- [~] **PRES-2 · Prepare stable demo evidence** · Initials: `NN` · PR: `#32`
   - Prerequisites: E2E-1.
   - Prefer a short replay or saved output. Put backup terminal output or screenshots in the deck.
   - Done when: the story still works if Docker, NOAA, Wi-Fi, or the OpenAI API fails during class.
