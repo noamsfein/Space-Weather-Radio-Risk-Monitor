@@ -447,7 +447,7 @@ The live NOAA poller is not on the critical path. Build it only after the replay
 
 ## Phase 6 — README, report, and rubric evidence
 
-- [ ] **DOC-1 · Make README commands factual** · Initials: `____` · PR: `____`
+- [~] **DOC-1 · Make README commands factual** · Initials: `NN` · PR: `pending`
   - Prerequisites: E2E-1.
   - Replace target/planned language with exact tested prerequisites, setup, one-command run, expected output, validation, troubleshooting, and cleanup.
   - Map any layout differences from the required package structure.
@@ -458,7 +458,7 @@ The live NOAA poller is not on the critical path. Build it only after the replay
   - Complete owner, URL, access, rights, schema, polling/rate-limit assumptions, failures, limitations, cache provenance, and replay details.
   - Done when: every item requested for `DATA_SOURCE.md` by the course handout is easy to locate.
 
-- [ ] **DOC-3 · Draw final architecture chart** · Initials: `____` · PR: `____`
+- [~] **DOC-3 · Draw final architecture chart** · Initials: `NN` · PR: `pending`
   - Prerequisites: E2E-1.
   - Show the implemented path, not the proposal plan. Separate optional live components from the required replay and Kafka path.
   - Use the same chart in the report and presentation when possible.
