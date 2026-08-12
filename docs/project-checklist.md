@@ -307,7 +307,7 @@ The live NOAA poller is not on the critical path. Build it only after the replay
 
 ## Phase 3 — stream processing and useful outputs
 
-- [~] **PROCESS-1 · Implement deduplication and rolling window** · Initials: `NF` · PR: `pending`
+- [~] **PROCESS-1 · Implement deduplication and rolling window** · Initials: `NF` · PR: `#11`
   - Prerequisites: CONTRACT-1, DATA-2.
   - Branch suffix: `add-rolling-kp-window`.
   - Create: `src/processor.py` with pure processing logic independent of Kafka.
