@@ -232,7 +232,7 @@ The live NOAA poller is not on the critical path. Build it only after the replay
   - Ignore: `.env`, `.venv*`, `__pycache__/`, `.pytest_cache/`, `.DS_Store`, generated Kafka state, and local logs.
   - Done when: Python 3.11 installs the requirements in a fresh virtual environment and no secret is required for replay or test collection.
 
-- [~] **P0-4 · Add local Kafka Compose configuration** · Initials: `NF` · PR: `pending`
+- [~] **P0-4 · Add local Kafka Compose configuration** · Initials: `NF` · PR: `#5`
   - Prerequisites: P0-1.
   - Branch suffix: `configure-local-kafka`.
   - Create: `docker-compose.yml` with one local Kafka broker and a health/readiness check.
