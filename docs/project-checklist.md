@@ -360,7 +360,7 @@ The live NOAA poller is not on the critical path. Build it only after the replay
   - Ask only for a two-sentence briefing from supplied facts. Use an injected client so tests never make a live call.
   - Done when: one model response can be saved for evaluation, while missing credentials or request failure automatically uses the fallback.
 
-- [~] **AI-3 · Implement automatic briefing checks** · Initials: `NF` · PR: `pending`
+- [~] **AI-3 · Implement automatic briefing checks** · Initials: `NF` · PR: `#18`
   - Prerequisites: AI-1.
   - Branch suffix: `validate-ai-briefing`.
   - Reject changed or invented Kp numbers, a mismatched label, unsupported causes/locations/recommendations, empty output, and more than two sentences.
