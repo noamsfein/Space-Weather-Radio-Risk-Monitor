@@ -183,6 +183,10 @@ The cached replay is the required review path. The live poller is useful but may
 
 Dependencies will be pinned in `requirements.txt`. Secrets belong in a local `.env`, which must never be submitted. `.env.example` will contain blank variable names only.
 
+Niki's one-time shared-project and private-key setup is documented in
+[`docs/niki-openai-setup.md`](docs/niki-openai-setup.md). Each partner uses a
+separate local key; neither key is shared or committed.
+
 The local broker uses the official `apache/kafka:4.1.2` image in single-node KRaft mode. Docker Compose exposes it at `localhost:9092`; Kafka does not need to be installed separately. Its state is disposable: restarting the same container preserves it, while removing and recreating the container starts a clean broker. Start and inspect it with:
 
 ```bash
