@@ -236,7 +236,8 @@ Wait for the `kafka` service to report `healthy` before running Kafka clients. T
 │   ├── metrics_output.py    # writes outputs/metrics.csv
 │   ├── stream_processor.py  # finite Kafka consumer wiring it together
 │   ├── briefing.py          # deterministic + optional live briefing
-│   └── evaluate.py          # deterministic evaluation evidence
+│   ├── evaluate.py          # deterministic evaluation evidence
+│   └── demo_ui.py           # optional local artifact viewer (not graded)
 ├── data/
 │   ├── sample_or_replay_data/   # raw NOAA sample, source profile, replay
 │   └── fixtures/                # expected results, invalid records,
@@ -371,6 +372,26 @@ with `data/fixtures/replay_expected.json`, evaluates six fixed briefing cases,
 and writes `evaluation/evaluation.json`. The cases are clearly identified as
 project-authored test candidates, not fresh live-model responses. The command
 returns nonzero if any expected alert or briefing decision does not match.
+
+## Optional demo UI
+
+An optional, dependency-free presentation layer can display the generated
+artifacts in a browser after the required demo has run:
+
+```bash
+./run_demo.sh
+python -m src.demo_ui   # http://127.0.0.1:8765
+```
+
+The page shows the run counts, both alerts, every metrics row (with the alert
+and duplicate rows highlighted), the briefing, and the evaluation summary — all
+read from `outputs/` and `evaluation/`, nothing recomputed. A
+**Generate Live AI Briefing** button reuses the exact `src.briefing` live path:
+approved facts only, the same six validation checks (displayed on screen), and
+the deterministic fallback on any failure. It binds to `127.0.0.1` only and
+adds no dependencies. This UI is not part of the graded review path; the
+terminal output of `./run_demo.sh` remains the required evidence. Walkthrough:
+[docs/ui-demo.md](docs/ui-demo.md).
 
 ## Team ownership
 
