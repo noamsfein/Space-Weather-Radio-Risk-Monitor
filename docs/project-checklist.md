@@ -41,6 +41,13 @@ Most of this checklist is normal repository work that can be implemented and tes
 - [ ] **`[MANUAL SETUP]` Save the GitHub protection rule for `main`** · Initials: `____` · PR: `N/A—GitHub setting`. Require a pull request, one approval, and resolved conversations before merging. This needs repository administration access and is configured in GitHub, not in project code.
 - [ ] **`[MANUAL SETUP]` Verify each development computer** · Initials: `____` · PR: `N/A—local setup`. Each partner who will run the project needs Git, Python 3.11, and Docker Desktop with `docker compose`. GitHub CLI (`gh`) is optional if PRs will be opened in the browser.
 - [ ] **`[MANUAL SETUP]` Open Docker Desktop before the first Kafka run** · Initials: `____` · PR: `N/A—local setup`. Docker must be running; the repository's Compose file will create the broker, and the demo code will create or verify `kp_observations`. Do not install Kafka separately or manually create a Kafka environment or topic.
+- [ ] **NIKI-API-1 · `[PERMISSION] [MANUAL SETUP] [MESSAGE]` Configure Niki's private OpenAI project access** · Initials: `____` · PR: `N/A—external and local setup`
+  - Assigned to: Niki Naderzad (`nnaderzad`). Niki must enter `NN` herself after completing and verifying the task.
+  - Prerequisites: Noam has invited Niki to the `MSDS` OpenAI API organization and added her to the `Space Weather Radio Risk` project after she accepts.
+  - Follow: `docs/niki-openai-setup.md` from beginning to end.
+  - Create locally: `.env` copied from `.env.example`, with Niki's own project key and a blank `OPENAI_MODEL` until AI-2 selects the exact model.
+  - Never share the key with Noam or commit it. Verify with `git check-ignore -v .env` and `git status --short`.
+  - Done when: Niki can select the shared project, has her own privately stored key, confirms `.env` is ignored, and messages Noam that setup is complete. Live-call verification happens after AI-2 is merged.
 
 The NOAA endpoint is public and needs no account, permission, API key, or manual download. A live OpenAI key is optional and belongs only in a local `.env`; never send it to a partner or commit it. The required replay and deterministic briefing must work without it.
 
