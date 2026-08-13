@@ -49,10 +49,15 @@ The required local demo creates:
 - One alert on each below-threshold to at-or-above-threshold crossing.
 - Automated alert tests and saved evaluation evidence.
 - A fact-constrained, two-sentence AI briefing with a no-key fallback.
+- Optional live NOAA polling through the same Kafka event contract.
 
-### Deliberately omitted
+### Optional live ingestion
 
-The optional 60-second live NOAA poller (checklist task `INGEST-2`) was not built. The checklist keeps it off the critical path, and the team prioritized the required deterministic replay, evidence, and presentation instead. The committed NOAA sample and dated source profile prove the endpoint's shape and viability; the contract's `normalize_noaa_record` already converts a raw NOAA record into the same canonical event the replay uses, so a poller could be added later without changing the contract, topic, or consumer.
+`python -m src.live_poller --once` fetches NOAA, validates the response,
+normalizes the newest valid observation, and publishes it to Kafka. Continuous
+mode polls every 60 seconds and publishes each newly appeared `time_tag` once.
+This path remains optional because quiet conditions may not produce an alert;
+the required replay never depends on NOAA or network access.
 
 ### Out of scope
 
@@ -102,6 +107,19 @@ Kafka message key: `planetary_kp`
 The constant key keeps the single planetary sequence ordered if the topic later has more than one partition.
 
 The repository includes a real NOAA subset at `data/sample_or_replay_data/noaa_raw_sample.json`, its dated viability profile at `data/sample_or_replay_data/source_profile.json`, and a clearly labeled synthetic threshold replay at `data/sample_or_replay_data/kp_replay.jsonl`. The synthetic fixture is necessary because quiet live snapshots may contain no Kp 6 crossing.
+
+With Docker Kafka running, publish the newest real NOAA observation once:
+
+```bash
+python -m src.live_poller --once
+```
+
+Omit `--once` for continuous ingestion. The poller uses the complete first
+response as a baseline, publishes its newest observation, and then checks every
+60 seconds for new timestamps. HTTP failures are logged and retried on the next
+interval. Stop continuous mode with `Ctrl-C`. The live producer is not part of
+`./run_demo.sh`, so real and synthetic observations are not mixed in the graded
+demonstration.
 
 With the local Kafka broker running, publish the complete nine-message fixture with:
 
@@ -237,7 +255,8 @@ Wait for the `kafka` service to report `healthy` before running Kafka clients. T
 │   ├── stream_processor.py  # finite Kafka consumer wiring it together
 │   ├── briefing.py          # deterministic + optional live briefing
 │   ├── evaluate.py          # deterministic evaluation evidence
-│   └── demo_ui.py           # optional local artifact viewer (not graded)
+│   ├── demo_ui.py           # optional local artifact viewer (not graded)
+│   └── live_poller.py       # optional live NOAA-to-Kafka producer
 ├── data/
 │   ├── sample_or_replay_data/   # raw NOAA sample, source profile, replay
 │   └── fixtures/                # expected results, invalid records,
@@ -250,7 +269,7 @@ Wait for the `kafka` service to report `healthy` before running Kafka clients. T
 └── report.pdf
 ```
 
-Differences from the proposal's planned layout: `outputs.py` became the two focused writers `alert_output.py` and `metrics_output.py`; `settings.py` was unnecessary because configuration lives in explicit constants and CLI flags; and `live_poller.py` was deliberately omitted with the live poller (see Scope). The detailed task sequence, prerequisites, and acceptance checks are in [docs/project-checklist.md](docs/project-checklist.md). Changes to a public field, artifact, command, topic, key, threshold, or window must be reflected in the documentation and tests.
+Differences from the proposal's planned layout: `outputs.py` became the two focused writers `alert_output.py` and `metrics_output.py`, and `settings.py` was unnecessary because configuration lives in explicit constants and CLI flags. The detailed task sequence, prerequisites, and acceptance checks are in [docs/project-checklist.md](docs/project-checklist.md). Changes to a public field, artifact, command, topic, key, threshold, or window must be reflected in the documentation and tests.
 
 ## Local review path
 

@@ -303,7 +303,7 @@ The live NOAA poller is not on the critical path. Build it only after the replay
   - Tests: use an injected or fake producer for parsing, invalid input, ordering, delivery, and flush behavior.
   - Done when: `pytest -q tests/test_replay_producer.py` passes and an integration run delivers every valid fixture message in order.
 
-- [ ] **INGEST-2 · Implement live NOAA poller (optional until base path is green)** · Initials: `____` · PR: `____`
+- [~] **INGEST-2 · Implement live NOAA poller — optional until base path is green** · Initials: `NF` · PR: `pending`
   - Prerequisites: INGEST-1 and E2E-1 complete.
   - Branch suffix: `add-noaa-poller`.
   - Create: `src/live_poller.py` using the same normalization and producer code.
@@ -311,6 +311,7 @@ The live NOAA poller is not on the critical path. Build it only after the replay
   - Tests: mock HTTP responses, time, duplicates, invalid JSON, timeouts, and empty data. Include one mocked full NOAA response so the poller is tested against the endpoint's realistic array shape and record count without making unit tests call NOAA.
   - Optional final viability check: fetch a fresh live response into a temporary file before submission, validate its shape/cadence/fields, and update the dated source profile only if the committed evidence is deliberately refreshed. Never make the required demo depend on this call.
   - Done when: a short `--once` run publishes a new event or clearly reports no new timestamp, the mocked full-response test passes, and cached replay still works if NOAA is unavailable.
+  - Implementation evidence (2026-08-12, NF): the first real `--once` run published the newest valid NOAA observation through Kafka; a second run used the ignored local checkpoint and reported no new timestamp. The live endpoint returned 357 valid rows in the viability check, the focused suite passed 20 tests (including a mocked 358-row response, malformed JSON, timeout, invalid row, startup backlog, restart deduplication, retry timing, and failed-delivery checkpoint safety), the full suite passed 167 tests, and all 3 Docker-backed Kafka integration tests passed. Awaiting PR and merge before checking off.
 
 ## Phase 3: stream processing and useful outputs
 
