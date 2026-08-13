@@ -133,6 +133,6 @@ Replay behavior, all implemented and tested:
 - [x] Add labeled threshold and invalid fixtures without misrepresenting synthetic records as raw NOAA observations.
 - [x] Confirm field names and types again before the final report. Rechecked 2026-08-12: same four raw fields, 358 unique ordered records, one-minute cadence, Kp 0.00 to 2.67, no Kp 6 crossing; `source_profile.json` updated.
 - [x] Record the official NWS public-domain, attribution, and disclaimer terms.
-- [x] Document actual timeout, retry, and polling settings (see “Rate limits and failure handling”; there is no runtime polling).
+- [x] Document actual timeout, retry, and polling settings. The optional runtime poller uses a 15-second HTTP timeout, polls no faster than every 60 seconds, and retries recoverable failures on the next interval; the required replay performs no NOAA request.
 - [x] Demonstrate duplicate suppression and invalid-record handling. The demo's `metrics.csv` contains the `duplicate_skipped` row, and `tests/test_contract.py` exercises every committed invalid record.
 - [x] Confirm the required replay works without NOAA or an API key. `env -u OPENAI_API_KEY ./run_demo.sh` passes; the demo path opens no connection beyond `localhost` (Kafka) and reads only committed files.

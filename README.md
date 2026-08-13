@@ -218,7 +218,7 @@ One representative event can be traced across every box: the record at `data/fix
 | OpenAI API | Optional two-sentence briefing only |
 | `python-dotenv` | Loading the optional private `.env` for the live briefing |
 
-Dependencies are pinned in `requirements.txt` (`requests` remains pinned there for the one-time source-viability check even though the runtime path does not poll NOAA). Secrets belong in a local `.env`, which must never be submitted. `.env.example` contains no credentials and preselects the shared, non-secret model name `gpt-5-nano`.
+Dependencies are pinned in `requirements.txt`; `requests` supports the optional live NOAA poller and source-viability checks. Secrets belong in a local `.env`, which must never be submitted. `.env.example` contains no credentials and preselects the shared, non-secret model name `gpt-5-nano`.
 
 Niki's one-time shared-project and private-key setup is documented in
 [`docs/niki-openai-setup.md`](docs/niki-openai-setup.md). Each partner uses a
@@ -273,7 +273,7 @@ Differences from the proposal's planned layout: `outputs.py` became the two focu
 
 ## Local review path
 
-This is the required reviewer path. It needs no NOAA access, no OpenAI key, and no network beyond `localhost`. All commands below have been run as written on macOS with Docker Desktop.
+This is the required reviewer path. After the dependencies and Docker image are installed, the demo itself needs no NOAA access, OpenAI key, or network beyond `localhost`. Initial setup may need internet access to install the pinned Python packages and pull the Kafka image. All commands below have been run as written on macOS with Docker Desktop.
 
 Prerequisites: Git, Python 3.11, and Docker Desktop with `docker compose` v2. Docker Desktop must be running before the demo starts.
 

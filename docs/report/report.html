@@ -157,8 +157,8 @@ proves deduplication rather than assuming it.
 OPTIONAL, OFF THE REQUIRED PATH
   - live OpenAI briefing (--use-live-ai): private key in .env; the candidate
     must pass the same fact checks or the deterministic fallback is used
-  - live NOAA poller: deliberately omitted; the committed NOAA sample and
-    tested normalization prove the raw-to-canonical mapping instead</pre>
+  - live NOAA poller (src/live_poller.py): fetch once or every 60 seconds,
+    normalize new timestamps, and publish them to the same Kafka topic</pre>
 <p class="figcap">Figure 3. Implemented architecture. Every box maps to a submitted module or artifact.</p>
 
 <h3>One real replay example</h3>
@@ -210,8 +210,9 @@ malformed messages with a visible warning instead of crashing.
 <h2>4. Evidence, bounded AI, and reproducibility</h2>
 <h3>Validation and evaluation results</h3>
 <ul>
-  <li><b>Automated tests:</b> 141 passed (contract, processor, outputs, briefing, evaluation, demo
-  fixtures), plus 3 opt-in Kafka integration tests, all passing against a clean Docker broker.</li>
+  <li><b>Automated tests:</b> 167 standard tests passed (contract, processor, outputs, briefing,
+  evaluation, demo fixtures, UI, and live poller). The 3 opt-in Kafka integration tests also passed
+  separately against a clean Docker broker.</li>
   <li><b>End-to-end acceptance:</b> <code>./run_demo.sh</code> verifies the generated artifacts
   field-by-field against the committed oracle <code>data/fixtures/replay_expected.json</code> —
   9 messages consumed, 8 unique, 1 duplicate skipped, exactly 2 alerts at the labeled timestamps —
@@ -241,8 +242,8 @@ of runtime and development AI use is in <code>AI_USAGE.md</code>.
 <pre>python3.11 -m venv .venv
 source .venv/bin/activate
 pip install -r requirements.txt
-./run_demo.sh          # requires Docker Desktop running; no network beyond
-                       # localhost, no OpenAI key</pre>
+./run_demo.sh          # requires Docker Desktop; after setup, no external
+                       # network or OpenAI key</pre>
 <p>
 Expected artifacts: <code>outputs/alert.json</code> (two alerts), <code>outputs/metrics.csv</code>
 (nine rows), <code>outputs/briefing.txt</code> (two sentences), and
@@ -274,11 +275,10 @@ is why rejection defaults to the deterministic fallback. The demo replays a labe
 fixture because quiet live data cannot demonstrate the threshold crossing.
 </p>
 <p>
-<b>One realistic next step.</b> Add the deferred 60-second live NOAA poller
-(<code>src/live_poller.py</code>). The contract, topic, consumer, and outputs need no changes —
-normalization from raw NOAA records is already implemented and tested — so the work is confined to
-scheduled fetching, unseen-<code>time_tag</code> filtering, and failure logging, with the cached
-replay kept as the reviewer path.
+<b>One realistic next step.</b> Add a long-running consumer that maintains rolling-window state while
+the implemented 60-second NOAA poller continues publishing new timestamps. It would update the
+artifacts atomically and let the optional UI refresh automatically. The deterministic replay would
+remain the reviewer path because live conditions may never cross Kp 6 during a demonstration.
 </p>
 </section>
 
