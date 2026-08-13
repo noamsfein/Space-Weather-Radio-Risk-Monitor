@@ -200,8 +200,8 @@ OPTIONAL, OFF THE REQUIRED PATH
   - live OpenAI briefing (python -m src.briefing --use-live-ai): needs a
     private key in .env; the candidate must pass the same fact checks or
     the deterministic fallback is used
-  - live NOAA poller: deliberately omitted (see Scope); the committed
-    NOAA sample proves the raw-to-canonical mapping instead
+  - live NOAA poller: implemented but kept off the required replay path;
+    the committed NOAA sample also proves the raw-to-canonical mapping
 ```
 
 One representative event can be traced across every box: the record at `data/fixtures/representative_event.json` enters the replay, is published with key `planetary_kp`, raises the rolling maximum to 6.3, emits the first alert in `alert.json` and the matching `alert_emitted` row in `metrics.csv`, and supplies the facts in `briefing.txt` that `evaluation.json` checks.
@@ -302,7 +302,7 @@ Processed 9 valid event(s); skipped 0 malformed; emitted 2 alert(s)
 ...
 Artifacts match the labeled fixture: 2 alert(s), 9 metrics row(s), briefing present, evaluation 7/7 assertions passed.
 ...
-147 passed, 3 skipped in ...s
+167 passed, 3 skipped in ...s
 
 Demo complete. Artifacts:
   outputs/alert.json
