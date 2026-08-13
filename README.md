@@ -32,10 +32,10 @@ The target user is an amateur-radio operator who wants a short, machine-readable
 
 The required local demo creates:
 
-- `outputs/alert.json` — the threshold-crossing alert and supporting facts;
-- `outputs/metrics.csv` — each processed observation, rolling maximum, rule-based label, and whether an alert was emitted;
-- `outputs/briefing.txt` — a two-sentence briefing or deterministic fallback; and
-- `evaluation/evaluation.json` — alert and AI-validation evidence.
+- `outputs/alert.json`: the threshold-crossing alert and supporting facts;
+- `outputs/metrics.csv`: each processed observation, rolling maximum, rule-based label, and whether an alert was emitted;
+- `outputs/briefing.txt`: a two-sentence briefing or deterministic fallback; and
+- `evaluation/evaluation.json`: alert and AI-validation evidence.
 
 ## Scope
 
@@ -147,7 +147,7 @@ REQUIRED REPLAY PATH (no network, no API key)
   data/sample_or_replay_data/kp_replay.jsonl     [labeled synthetic fixture]
                       |
                       v
-  src/replay_producer.py — validate every record (src/contract.py),
+  src/replay_producer.py: validate every record (src/contract.py),
   reject disorder, publish in event-time order
                       |
                       v
@@ -155,7 +155,7 @@ REQUIRED REPLAY PATH (no network, no API key)
         message key: planetary_kp
                       |
                       v
-  src/stream_processor.py — finite consumer
+  src/stream_processor.py: finite consumer
         src/processor.py: deduplicate by time_tag
         + rolling 15-minute event-time maximum (inclusive)
         + alert on below-6 to at-or-above-6 crossing, rearm below 6
@@ -165,14 +165,14 @@ REQUIRED REPLAY PATH (no network, no API key)
    outputs/alert.json    outputs/metrics.csv
              |
              v
-  src/briefing.py — deterministic two-sentence template
+  src/briefing.py: deterministic two-sentence template
   from the five approved alert facts
              |
              v
    outputs/briefing.txt
              |
              v
-  src/evaluate.py — expected-vs-actual alerts + six fixed
+  src/evaluate.py: expected-vs-actual alerts + six fixed
   briefing acceptance cases
              |
              v
@@ -283,7 +283,7 @@ Processed 9 valid event(s); skipped 0 malformed; emitted 2 alert(s)
 ...
 Artifacts match the labeled fixture: 2 alert(s), 9 metrics row(s), briefing present, evaluation 7/7 assertions passed.
 ...
-141 passed, 3 skipped in ...s
+147 passed, 3 skipped in ...s
 
 Demo complete. Artifacts:
   outputs/alert.json
@@ -311,9 +311,9 @@ Verified success criteria:
 
 Troubleshooting:
 
-- `DEMO FAILED: Docker is not running` — open Docker Desktop and rerun.
-- `Kafka broker did not become healthy` — check `docker compose ps` and port `9092`; another local broker or an old container can hold the port (`docker compose down -v` then rerun).
-- `Python dependencies missing` — activate the virtual environment and rerun `pip install -r requirements.txt`.
+- `DEMO FAILED: Docker is not running`: open Docker Desktop and rerun.
+- `Kafka broker did not become healthy`: check `docker compose ps` and port `9092`; another local broker or an old container can hold the port (`docker compose down -v` then rerun).
+- `Python dependencies missing`: activate the virtual environment and rerun `pip install -r requirements.txt`.
 - A `Coordinator load in progress: retrying` line from the producer on a fresh broker is normal; the idempotent producer retries and the run continues.
 
 Cleanup:
@@ -384,7 +384,7 @@ python -m src.demo_ui   # http://127.0.0.1:8765
 ```
 
 The page shows the run counts, both alerts, every metrics row (with the alert
-and duplicate rows highlighted), the briefing, and the evaluation summary — all
+and duplicate rows highlighted), the briefing, and the evaluation summary, all
 read from `outputs/` and `evaluation/`, nothing recomputed. A
 **Generate Live AI Briefing** button reuses the exact `src.briefing` live path:
 approved facts only, the same six validation checks (displayed on screen), and
@@ -431,7 +431,7 @@ Replace the example branch with the actual owner and task. The other partner rev
 
 ## Course deliverables
 
-- Presentation: Thursday, August 13, 2026, 5:40–5:48 PM PDT. Seven minutes plus one minute of Q&A; both team members must speak.
+- Presentation: Thursday, August 13, 2026, 5:40 to 5:48 PM PDT. Seven minutes plus one minute of Q&A; both team members must speak.
 - Written report and code ZIP: Friday, August 14, 2026, 11:59 PM PDT.
 - ZIP name: `final_project_nsfein_nnaderzad.zip`.
 - Top-level folder: `final_project_nsfein_nnaderzad/`.

@@ -2,7 +2,7 @@
 
 This is the working board for Noam Fein (`nsfein`) and Niki Naderzad (`nnaderzad`). It takes the project from an empty implementation to the presentation, final report, reproducible ZIP, and submission.
 
-**Presentation:** Thursday, August 13, 2026, 5:40–5:48 PM PDT, in person at 101 Howard, Room 529. The team has 7 minutes plus 1 minute of Q&A, and both students must speak.
+**Presentation:** Thursday, August 13, 2026, 5:40 to 5:48 PM PDT, in person at 101 Howard, Room 529. The team has 7 minutes plus 1 minute of Q&A, and both students must speak.
 
 **Written report and code:** Friday, August 14, 2026, 11:59 PM PDT.
 
@@ -19,7 +19,7 @@ This is the working board for Noam Fein (`nsfein`) and Niki Naderzad (`nnaderzad
 Status notation:
 
 - `[ ]` not started
-- `[~]` in progress — replace the space manually while working
+- `[~]` in progress; replace the space manually while working
 - `[x]` implemented, reviewed, and verified; initials and PR number must already be filled in
 
 ## Manual and external actions
@@ -36,12 +36,12 @@ Most of this checklist is normal repository work that can be implemented and tes
 
 ### One-time setup and access
 
-- [x] **`[PERMISSION]` Invite Niki to the GitHub repository** · Initials: `NF` · PR: `N/A—GitHub setting`. Noam sent the repository invitation.
-- [ ] **`[PERMISSION]` Niki accepts the invitation and verifies access** · Initials: `____` · PR: `N/A—external access`. Niki should clone or pull the repository, create a task branch when beginning real work, and confirm that she can push that branch and open a PR. Do not test access by pushing directly to `main`.
-- [ ] **`[MANUAL SETUP]` Save the GitHub protection rule for `main`** · Initials: `____` · PR: `N/A—GitHub setting`. Require a pull request, one approval, and resolved conversations before merging. This needs repository administration access and is configured in GitHub, not in project code.
-- [ ] **`[MANUAL SETUP]` Verify each development computer** · Initials: `____` · PR: `N/A—local setup`. Each partner who will run the project needs Git, Python 3.11, and Docker Desktop with `docker compose`. GitHub CLI (`gh`) is optional if PRs will be opened in the browser.
-- [ ] **`[MANUAL SETUP]` Open Docker Desktop before the first Kafka run** · Initials: `____` · PR: `N/A—local setup`. Docker must be running; the repository's Compose file will create the broker, and the demo code will create or verify `kp_observations`. Do not install Kafka separately or manually create a Kafka environment or topic.
-- [ ] **NIKI-API-1 · `[PERMISSION] [MANUAL SETUP] [MESSAGE]` Configure Niki's private OpenAI project access** · Initials: `____` · PR: `N/A—external and local setup`
+- [x] **`[PERMISSION]` Invite Niki to the GitHub repository** · Initials: `NF` · PR: `N/A: GitHub setting`. Noam sent the repository invitation.
+- [ ] **`[PERMISSION]` Niki accepts the invitation and verifies access** · Initials: `____` · PR: `N/A: external access`. Niki should clone or pull the repository, create a task branch when beginning real work, and confirm that she can push that branch and open a PR. Do not test access by pushing directly to `main`.
+- [ ] **`[MANUAL SETUP]` Save the GitHub protection rule for `main`** · Initials: `____` · PR: `N/A: GitHub setting`. Require a pull request, one approval, and resolved conversations before merging. This needs repository administration access and is configured in GitHub, not in project code.
+- [ ] **`[MANUAL SETUP]` Verify each development computer** · Initials: `____` · PR: `N/A: local setup`. Each partner who will run the project needs Git, Python 3.11, and Docker Desktop with `docker compose`. GitHub CLI (`gh`) is optional if PRs will be opened in the browser.
+- [ ] **`[MANUAL SETUP]` Open Docker Desktop before the first Kafka run** · Initials: `____` · PR: `N/A: local setup`. Docker must be running; the repository's Compose file will create the broker, and the demo code will create or verify `kp_observations`. Do not install Kafka separately or manually create a Kafka environment or topic.
+- [ ] **NIKI-API-1 · `[PERMISSION] [MANUAL SETUP] [MESSAGE]` Configure Niki's private OpenAI project access** · Initials: `____` · PR: `N/A: external and local setup`
   - Assigned to: Niki Naderzad (`nnaderzad`). Niki must enter `NN` herself after completing and verifying the task.
   - Prerequisites: Noam has invited Niki to the `MSDS` OpenAI API organization and added her to the `Space Weather Radio Risk` project after she accepts.
   - Follow: `docs/niki-openai-setup.md` from beginning to end.
@@ -167,7 +167,7 @@ The live NOAA poller is not on the critical path. Build it only after the replay
 
 ## Deadline-first plan
 
-### Tuesday, August 11 — make Kafka carry one correct alert
+### Tuesday, August 11: make Kafka carry one correct alert
 
 - [x] Establish a dedicated project Git repository before staging any files.
 - [ ] Freeze scope and claim non-overlapping tasks by branch name.
@@ -181,7 +181,7 @@ The live NOAA poller is not on the critical path. Build it only after the replay
 - [ ] Integrate them and create the first correct `alert.json` and `metrics.csv`.
 - [ ] End the day with deterministic alert tests green.
 
-### Wednesday, August 12 — finish the reproducible product and slides
+### Wednesday, August 12: finish the reproducible product and slides
 
 - [ ] Make `./run_demo.sh` work from clean outputs with one command after setup.
 - [ ] Add the AI briefing validator, saved evaluation cases, and deterministic fallback.
@@ -191,7 +191,7 @@ The live NOAA poller is not on the critical path. Build it only after the replay
 - [ ] Rehearse the 7-minute presentation twice; both partners speak.
 - [ ] Freeze new features Wednesday night.
 
-### Thursday, August 13 — present a stable replay
+### Thursday, August 13: present a stable replay
 
 - [ ] By noon, rerun the full demo and save known-good output/evaluation artifacts.
 - [ ] Use replay for the presentation; do not depend on live NOAA or a live AI call.
@@ -200,7 +200,7 @@ The live NOAA poller is not on the critical path. Build it only after the replay
 - [ ] Present at 5:40 PM; both partners speak.
 - [ ] After the presentation, record instructor feedback and only make controlled fixes.
 
-### Friday, August 14 — clean-room review and submit
+### Friday, August 14: clean-room review and submit
 
 - [ ] Run every README command from a fresh clone/copy or clean environment.
 - [ ] Finalize `report.pdf`, ownership, AI disclosure, and limitations.
@@ -210,9 +210,9 @@ The live NOAA poller is not on the critical path. Build it only after the replay
 - [ ] Both partners inspect the exact final ZIP.
 - [ ] Upload before 11:59 PM PDT. If Canvas has not linked the team, both upload the same ZIP.
 
-## Phase 0 — coordination and repository foundation
+## Phase 0: coordination and repository foundation
 
-- [x] **P0-0 · Establish a safe project Git root** · Initials: `NF` · PR: `N/A—commit 1840e86`
+- [x] **P0-0 · Establish a safe project Git root** · Initials: `NF` · PR: `N/A: commit 1840e86`
   - Prerequisites: none.
   - Branch suffix: `setup-project-repo`.
   - Completed: this directory is now its own Git repository, the default branch is `main`, and `origin` is `https://github.com/noamsfein/Space-Weather-Radio-Risk-Monitor.git`.
@@ -246,25 +246,25 @@ The live NOAA poller is not on the critical path. Build it only after the replay
   - Keep `localhost:9092` explicit and documented. Do not add ZooKeeper, a Kafka UI, or extra services unless required.
   - Done when: `docker compose up -d` starts the broker, a client can use `kp_observations`, and `docker compose down -v` cleans it up.
 
-## Phase 1 — source, replay data, and event contract
+## Phase 1: source, replay data, and event contract
 
-- [x] **DATA-0 · Verify the source is correct, current, and viable** · Initials: `NF` · PR: `N/A—commit 1840e86`
+- [x] **DATA-0 · Verify the source is correct, current, and viable** · Initials: `NF` · PR: `N/A: commit 1840e86`
   - Prerequisites: none for the initial check; rerun after P0-3 once the project environment exists.
   - Branch suffix: `verify-noaa-source`.
-  - Fetch the official endpoint into a temporary file. Confirm HTTP success, JSON-array shape, required raw fields, numeric `estimated_kp` in 0–9, unique/ordered timestamps, recent last timestamp, and roughly one-minute cadence.
+  - Fetch the official endpoint into a temporary file. Confirm HTTP success, JSON-array shape, required raw fields, numeric `estimated_kp` from 0 to 9, unique/ordered timestamps, recent last timestamp, and roughly one-minute cadence.
   - Record count, time span, missing/duplicate counts, minimum/maximum Kp, and number of Kp 6-or-higher records in `data/sample_or_replay_data/source_profile.json`.
   - Viability rule: the feed must contain enough ordered observations for a 15-minute window. It does not need to contain Kp 6; if it does not, the labeled replay fixture remains the required alert demonstration.
-  - Initial result on 2026-08-11: 358 unique records, 357-minute span, no missing required fields, one-minute cadence, Kp range 0.00–3.33, and no Kp 6 crossing. The source is viable and the deterministic threshold fixture is required.
+  - Initial result on 2026-08-11: 358 unique records, 357-minute span, no missing required fields, one-minute cadence, Kp range 0.00 to 3.33, and no Kp 6 crossing. The source is viable and the deterministic threshold fixture is required.
   - Done when: the official endpoint, committed raw sample, source documentation, canonical field mapping, and replay strategy agree. Repeat this check before the final report and update the dated profile.
 
-- [x] **DATA-1 · Capture and attribute a raw NOAA sample** · Initials: `NF` · PR: `N/A—commit 1840e86`
+- [x] **DATA-1 · Capture and attribute a raw NOAA sample** · Initials: `NF` · PR: `N/A: commit 1840e86`
   - Prerequisites: DATA-0.
   - Branch suffix: `capture-noaa-sample`.
   - Save: a small raw response or subset at `data/sample_or_replay_data/noaa_raw_sample.json` with the source URL and retrieval timestamp in the directory README.
   - Update: observed schema and rights/attribution note in `DATA_SOURCE.md`.
   - Done when: the sample parses, contains no private data, the four raw fields are confirmed, and a reviewer can tell which records are observed NOAA data.
 
-- [x] **DATA-2 · Create labeled deterministic fixtures** · Initials: `NF` · PR: `N/A—commit 1840e86`
+- [x] **DATA-2 · Create labeled deterministic fixtures** · Initials: `NF` · PR: `N/A: commit 1840e86`
   - Prerequisites: DATA-1.
   - Branch suffix: `add-replay-fixtures`.
   - Create: `data/sample_or_replay_data/kp_replay.jsonl`, `data/fixtures/invalid_records.jsonl`, and `data/fixtures/replay_expected.json`. Synthetic records must not be presented as raw NOAA history.
@@ -275,7 +275,7 @@ The live NOAA poller is not on the critical path. Build it only after the replay
   - Prerequisites: DATA-1.
   - Branch suffix: `add-event-contract`.
   - Create: `src/contract.py` with `time_tag`, `kp_value`, `source`, and `ingested_at`.
-  - Validate UTC timestamps, `kp_value` in 0–9, and documented source provenance. Normalize NOAA `estimated_kp` to `kp_value`; allow the synthetic fixture identifier only for replay.
+  - Validate UTC timestamps, `kp_value` from 0 to 9, and documented source provenance. Normalize NOAA `estimated_kp` to `kp_value`; allow the synthetic fixture identifier only for replay.
   - Tests: accept representative raw and replay records; reject missing fields, malformed timestamps, nonnumeric Kp, and out-of-range values.
   - Done when: `pytest -q tests/test_contract.py` passes and the representative event serializes to the documented four-field contract.
 
@@ -285,7 +285,7 @@ The live NOAA poller is not on the critical path. Build it only after the replay
   - Save: one representative canonical JSON record for the README, report, and presentation.
   - Done when: the same field names appear in code, tests, docs, and slides.
 
-## Phase 2 — Kafka and replay ingestion
+## Phase 2: Kafka and replay ingestion
 
 - [x] **KAFKA-1 · Pass a broker smoke test** · Initials: `NF` · PR: `#8`
   - Prerequisites: P0-4, P0-3, CONTRACT-1.
@@ -303,7 +303,7 @@ The live NOAA poller is not on the critical path. Build it only after the replay
   - Tests: use an injected or fake producer for parsing, invalid input, ordering, delivery, and flush behavior.
   - Done when: `pytest -q tests/test_replay_producer.py` passes and an integration run delivers every valid fixture message in order.
 
-- [ ] **INGEST-2 · Implement live NOAA poller — optional until base path is green** · Initials: `____` · PR: `____`
+- [ ] **INGEST-2 · Implement live NOAA poller (optional until base path is green)** · Initials: `____` · PR: `____`
   - Prerequisites: INGEST-1 and E2E-1 complete.
   - Branch suffix: `add-noaa-poller`.
   - Create: `src/live_poller.py` using the same normalization and producer code.
@@ -312,7 +312,7 @@ The live NOAA poller is not on the critical path. Build it only after the replay
   - Optional final viability check: fetch a fresh live response into a temporary file before submission, validate its shape/cadence/fields, and update the dated source profile only if the committed evidence is deliberately refreshed. Never make the required demo depend on this call.
   - Done when: a short `--once` run publishes a new event or clearly reports no new timestamp, the mocked full-response test passes, and cached replay still works if NOAA is unavailable.
 
-## Phase 3 — stream processing and useful outputs
+## Phase 3: stream processing and useful outputs
 
 - [x] **PROCESS-1 · Implement deduplication and rolling window** · Initials: `NF` · PR: `#11`
   - Prerequisites: CONTRACT-1, DATA-2.
@@ -351,7 +351,7 @@ The live NOAA poller is not on the critical path. Build it only after the replay
   - Handle malformed Kafka values without crashing the whole run, close the consumer, and return nonzero on Kafka or output failure.
   - Done when: real Kafka replay creates the same alerts and metrics as the pure fixture test.
 
-## Phase 4 — bounded AI and evaluation
+## Phase 4: bounded AI and evaluation
 
 - [x] **AI-1 · Define briefing facts and deterministic fallback** · Initials: `NF` · PR: `#17`
   - Prerequisites: OUTPUT-1.
@@ -374,25 +374,27 @@ The live NOAA poller is not on the critical path. Build it only after the replay
   - Return explicit rejection reasons. Do not silently repair a rejected response and call it accepted.
   - Done when: fixed accepted and rejected candidates receive their expected decisions in `tests/test_briefing.py`.
 
-- [~] **AI-4 · Save evaluation evidence** · Initials: `NF` · PR: `#23`
+- [x] **AI-4 · Save evaluation evidence** · Initials: `NF` · PR: `#23`
   - Prerequisites: AI-2, AI-3.
   - Branch suffix: `add-evaluation-harness`.
   - Create: `src/evaluate.py` and `evaluation/evaluation.json` containing expected/actual alert results plus AI input, candidate output, expected/actual decision, checks, rejection reasons, fallback status, totals, and pass rate.
   - Include correct, wrong-number, wrong-label, unsupported-detail, too-long, and unavailable-API cases.
   - Done when: `python -m src.evaluate` is deterministic over saved candidates, returns nonzero on failed acceptance checks, and honestly records failures.
+  - Audit 2026-08-12 (NN): regenerated `evaluation/evaluation.json`; alert comparison and all six AI cases passed (7/7 assertions). `tests/test_evaluate.py` also verifies deterministic bytes, no live client construction, and nonzero exit on a deliberately incorrect expectation.
 
-- [ ] **AI-5 · Complete `AI_USAGE.md` from actual work** · Initials: `____` · PR: `____`
+- [~] **AI-5 · Complete `AI_USAGE.md` from actual work** · Initials: `NN` · PR: `pending`
   - Prerequisites: AI-4.
   - Branch suffix: `finalize-ai-disclosure`.
   - Replace planned wording with the actual model/provider, prompt, accepted/rejected evidence, verification, limitations, fallback, and development-assistance log.
   - Done when: both partners agree it accurately discloses runtime and development AI use without claiming AI owned student decisions.
+  - Draft completed 2026-08-12 (NN): replaced planned content with the implemented Responses API configuration, representative replay input, exact prompt, six validation checks, saved 7/7 evaluation evidence, fallback behavior, limitations, and a task-specific development-assistance log. Awaiting both partners' final accuracy review before checking off.
 
-## Phase 5 — testing and one-command review path
+## Phase 5: testing and one-command review path
 
 - [x] **TEST-1 · Complete contract and source tests** · Initials: `NN` · PR: `#24`
   - Prerequisites: CONTRACT-1.
   - Branch suffix: `complete-contract-tests`.
-  - Test valid source normalization, UTC handling, missing field, malformed time, nonnumeric Kp, NaN/infinity, and Kp outside 0–9.
+  - Test valid source normalization, UTC handling, missing field, malformed time, nonnumeric Kp, NaN/infinity, and Kp outside 0 to 9.
   - Done when: `pytest -q tests/test_contract.py` passes and each validation rule has a positive or negative case.
 
 - [x] **TEST-2 · Complete window and alert tests** · Initials: `NN` · PR: `#25`
@@ -424,7 +426,7 @@ The live NOAA poller is not on the critical path. Build it only after the replay
   - Verify: expected alerts; metrics match the fixture; duplicate counts match; briefing is accepted or uses fallback; evaluation matches labels.
   - Save: representative `outputs/` and `evaluation/` artifacts.
   - Done when: both partners independently run it successfully and can trace one record from JSONL to Kafka to alert to briefing.
-  - Niki's run 2026-08-12 (NN): `./run_demo.sh` on merged `main` passed — 9 events through the local broker, 2 alerts at the labeled timestamps, all metrics rows and duplicate counts match the fixture, briefing via deterministic fallback, evaluation 7/7, suite 141 passed. Representative artifacts committed under `outputs/` and `evaluation/`. Awaiting Noam's independent run before checking off.
+  - Niki's run 2026-08-12 (NN): `./run_demo.sh` on merged `main` passed with 9 events through the local broker, 2 alerts at the labeled timestamps, all metrics rows and duplicate counts matching the fixture, a briefing via deterministic fallback, a 7/7 evaluation, and 141 passing tests. Representative artifacts committed under `outputs/` and `evaluation/`. Awaiting Noam's independent run before checking off.
 
 - [~] **E2E-2 · Offline/no-key acceptance** · Initials: `NN` · PR: `#28`
   - Prerequisites: E2E-1.
@@ -433,28 +435,28 @@ The live NOAA poller is not on the critical path. Build it only after the replay
   - Done when: replay still passes, `briefing.txt` clearly comes from the deterministic fallback, and the README identifies this as the required reviewer path.
   - Niki's run 2026-08-12 (NN): `env -u OPENAI_API_KEY ./run_demo.sh` passed with identical artifacts; briefing source reported `fallback`, and the README already states no network or API key is required for the required replay review path.
 
-- [ ] **E2E-DATA · Larger replay robustness test — optional after the base path is green** · Initials: `____` · PR: `____`
+- [ ] **E2E-DATA · Larger replay robustness test (optional after the base path is green)** · Initials: `____` · PR: `____`
   - Prerequisites: E2E-1 and E2E-2.
   - Branch suffix: `test-larger-replay`.
-  - Create or generate a separately labeled deterministic replay of approximately 100–300 canonical events. Preserve event-time order and include enough normal, elevated, duplicate, expiry, and rearm cases to verify longer-running state behavior.
+  - Create or generate a separately labeled deterministic replay of approximately 100 to 300 canonical events. Preserve event-time order and include enough normal, elevated, duplicate, expiry, and rearm cases to verify longer-running state behavior.
   - Run it through the real Kafka producer and consumer, record expected/actual message, unique-event, duplicate, and alert counts, and confirm processing completes without stale offsets or reused outputs.
   - Keep the nine-message fixture as the presentation and required reviewer path; summarize the larger result instead of presenting every row.
   - Done when: the larger replay has a reproducible generator or committed non-private fixture, a deterministic expected-results file, a passing automated Kafka acceptance test, and a short saved summary. Skip this task if any base requirement is incomplete.
 
-- [ ] **E2E-3 · Failure recovery demonstration — optional bonus only** · Initials: `____` · PR: `____`
+- [ ] **E2E-3 · Failure recovery demonstration (optional bonus only)** · Initials: `____` · PR: `____`
   - Prerequisites: every base task through E2E-2 and core docs complete.
   - Branch suffix: `demonstrate-failure-recovery`.
   - Demonstrate a controlled broker/process failure and recovery using the same input, with exact reviewer steps and saved evidence.
   - Done when: it is a working, clearly labeled extension with exact commands and saved output. Skip it if any base requirement remains incomplete.
 
-- [x] **UI-1 · Optional local demo UI — presentation layer only, agreed 2026-08-12** · Initials: `NN` · PR: `#33`
+- [x] **UI-1 · Optional local demo UI (presentation layer only, agreed 2026-08-12)** · Initials: `NN` · PR: `#33`
   - Prerequisites: E2E-1 and E2E-2 (the base path stayed untouched and green).
   - Branch suffix: `add-optional-demo-ui`.
   - Scope note: the guardrails exclude a dashboard from the required product; this task adds `src/demo_ui.py` only as a clearly labeled optional viewer of already-generated artifacts, agreed by both partners via this PR's review. It adds no dependencies, binds to `127.0.0.1` only, and never appears in the required review path.
   - The "Generate Live AI Briefing" button reuses `src.briefing` unchanged: approved facts only, the same validator, deterministic fallback on any failure.
   - Done when: `python -m src.demo_ui` serves the artifacts after `./run_demo.sh`, the button shows a validated model briefing or the fallback with reasons, `pytest -q tests/test_demo_ui.py` passes with no live call, and the README and `docs/ui-demo.md` label the layer optional.
 
-## Phase 6 — README, report, and rubric evidence
+## Phase 6: README, report, and rubric evidence
 
 - [~] **DOC-1 · Make README commands factual** · Initials: `NN` · PR: `#29`
   - Prerequisites: E2E-1.
@@ -510,7 +512,7 @@ The live NOAA poller is not on the critical path. Build it only after the replay
 
 Do not pursue the optional +3 extension until every row above has complete evidence.
 
-## Phase 7 — presentation
+## Phase 7: presentation
 
 - [x] **PRES-1 · Build a short evidence-first deck** · Initials: `NN` · PR: `#32`
   - Prerequisites: E2E-1, DOC-3.
@@ -541,7 +543,7 @@ Do not pursue the optional +3 extension until every row above has complete evide
 - [ ] Evidence-based lesson or limitation and one realistic next step.
 - [ ] Both students speak and the total presentation stays within 7 minutes.
 
-## Phase 8 — final package and submission
+## Phase 8: final package and submission
 
 - [ ] **PKG-1 · Confirm required package contents** · Initials: `____` · PR: `____`
   - Prerequisites: REPORT-5, DOC-1, DOC-2, AI-5.
