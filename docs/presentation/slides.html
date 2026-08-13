@@ -173,15 +173,15 @@
 
 <section class="slide cue" id="slide-5">
   <div class="eyebrow" style="color:#cbd9ff">Live demonstration</div>
-  <h1>Leave the slides here</h1>
-  <p class="prompt">Switch to the local terminal, then show the UI.</p>
+  <h1>Live demo: one command, two alerts</h1>
+  <p class="prompt">A deterministic replay proves crossing, suppression, rearming, and a second alert.</p>
   <div class="cue-flow">
-    <div class="cue-step"><b>1 · Terminal</b><span>Run <code style="color:#17212b">./run_demo.sh</code><br>Point out real Kafka startup and replay.</span></div>
-    <div class="cue-step"><b>2 · Result</b><span>Show 9 messages, 1 duplicate, and exactly 2 alerts.</span></div>
-    <div class="cue-step"><b>3 · UI</b><span>Open the local UI and show the alert, metrics, and natural-language briefing.</span></div>
+    <div class="cue-step"><b>1 · Kafka replay</b><span><code style="color:#17212b">./run_demo.sh</code> publishes 9 ordered events through local Kafka.</span></div>
+    <div class="cue-step"><b>2 · Two crossings</b><span>1 duplicate is skipped; the monitor rearms and emits exactly 2 alerts.</span></div>
+    <div class="cue-step"><b>3 · Evidence UI</b><span>Trace alert #1, the metrics, and the bounded natural-language briefing.</span></div>
   </div>
-  <div class="footer"><span>Niki leads the demo · Noam explains one event if needed</span><span>5</span></div>
-  <aside class="speaker-notes">Niki · 2:00 maximum. Do not narrate setup. Terminal: run ./run_demo.sh and call out Kafka, counts, artifacts, tests. UI: show the same generated artifacts and briefing; do not claim the UI makes the decision. If anything fails, jump to backup slide 8. [Sources] run_demo.sh and saved artifacts. Data explainer: The required demo uses nine project-created rows because current NOAA data may stay below Kp 6 and never demonstrate an alert. The rows are clearly labeled synthetic and use the exact same four-field contract as real NOAA events. Each JSONL row becomes one Kafka message. The optional live poller also sends genuine current NOAA observations to the same topic, but the replay is what reliably demonstrates crossing, duplicate suppression, window expiration, rearming, and a second alert.</aside>
+  <div class="footer"><span>Replay → Kafka → consumer → evidence UI</span><span>5</span></div>
+  <aside class="speaker-notes">Niki · 2:00 maximum. Do not narrate setup. Terminal: run ./run_demo.sh and call out Kafka, counts, artifacts, tests. UI: show the same generated artifacts and briefing; do not claim the UI makes the decision. If anything fails, jump to backup slide 8. [Sources] run_demo.sh and saved artifacts. Data explainer: The required demo uses nine project-created rows because current NOAA data may stay below Kp 6 and never demonstrate an alert. The rows are clearly labeled synthetic and use the exact same four-field contract as real NOAA events. Each JSONL row becomes one Kafka message. The optional live poller also sends genuine current NOAA observations to the same topic, but the replay is what reliably demonstrates crossing, duplicate suppression, window expiration, rearming, and a second alert. Demo transition: Switch to the local terminal, run `./run_demo.sh`, and then show the UI. Two-alert explainer: The two alerts represent two separate threshold-crossing episodes, not simply two values above 6. At 00:10, Kp 6.3 raises the rolling 15-minute maximum above the threshold and creates alert #1. The repeated 6.3 row is skipped as a duplicate, and later rows do not create alert spam while the rolling window remains elevated. At 00:26, the earlier 6.3 leaves the window, the rolling maximum falls to 5.5, and the monitor returns to normal and rearms. At 00:27, Kp 7.0 creates a new crossing and alert #2. The later Kp 6.7 does not create a third alert because the monitor is already elevated. Say: “The first episode creates one alert, repeated elevated readings are suppressed, the monitor rearms after conditions return to normal, and the second episode creates the second alert.”</aside>
 </section>
 
 <section class="slide" id="slide-6">
