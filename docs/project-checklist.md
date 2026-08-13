@@ -303,7 +303,7 @@ The live NOAA poller is not on the critical path. Build it only after the replay
   - Tests: use an injected or fake producer for parsing, invalid input, ordering, delivery, and flush behavior.
   - Done when: `pytest -q tests/test_replay_producer.py` passes and an integration run delivers every valid fixture message in order.
 
-- [~] **INGEST-2 · Implement live NOAA poller — optional until base path is green** · Initials: `NF` · PR: `pending`
+- [~] **INGEST-2 · Implement live NOAA poller — optional until base path is green** · Initials: `NF` · PR: `#37`
   - Prerequisites: INGEST-1 and E2E-1 complete.
   - Branch suffix: `add-noaa-poller`.
   - Create: `src/live_poller.py` using the same normalization and producer code.
