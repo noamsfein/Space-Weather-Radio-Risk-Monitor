@@ -382,7 +382,7 @@ The live NOAA poller is not on the critical path. Build it only after the replay
   - Done when: `python -m src.evaluate` is deterministic over saved candidates, returns nonzero on failed acceptance checks, and honestly records failures.
   - Audit 2026-08-12 (NN): regenerated `evaluation/evaluation.json`; alert comparison and all six AI cases passed (7/7 assertions). `tests/test_evaluate.py` also verifies deterministic bytes, no live client construction, and nonzero exit on a deliberately incorrect expectation.
 
-- [~] **AI-5 · Complete `AI_USAGE.md` from actual work** · Initials: `NN` · PR: `pending`
+- [~] **AI-5 · Complete `AI_USAGE.md` from actual work** · Initials: `NN` · PR: `#38`
   - Prerequisites: AI-4.
   - Branch suffix: `finalize-ai-disclosure`.
   - Replace planned wording with the actual model/provider, prompt, accepted/rejected evidence, verification, limitations, fallback, and development-assistance log.
