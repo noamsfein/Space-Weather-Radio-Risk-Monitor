@@ -19,6 +19,7 @@ htmlcov/
 
 # Local Kafka state and generated packaging
 kafka-data/
+.state/
 dist/
 final_project_*.zip
 evaluation/live_candidate.txt

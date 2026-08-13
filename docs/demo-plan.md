@@ -4,7 +4,10 @@ This plan defines what Noam and Niki should show during the seven-minute final p
 
 ## Demo decision
 
-Use a short terminal-based replay through the real local Kafka path. Do not build a frontend solely for the presentation.
+Use a short terminal-based replay through the real local Kafka path, followed by
+the optional local UI as a readable view of the generated artifacts. The
+terminal proves the Kafka pipeline; the UI presents the result but does not
+replace or recompute the pipeline.
 
 The demo should prove one complete path:
 
@@ -24,9 +27,12 @@ Kafka producer -> kp_observations -> consumer
                                       |
                                       v
                          evaluation.json + PASS
+                                      |
+                                      v
+                         optional local demo UI
 ```
 
-The required presentation path must not depend on the live NOAA endpoint, active storm conditions, Wi-Fi, or an OpenAI API key.
+The required presentation path must not depend on the live NOAA endpoint, active storm conditions, Wi-Fi, or an OpenAI API key. Mention the implemented live NOAA poller briefly using saved evidence; do not run it during the timed demo because current conditions may be quiet and `run_demo.sh` intentionally resets Kafka.
 
 ## Story the audience should understand
 
@@ -76,17 +82,19 @@ This scenario is valuable because it demonstrates the window and crossing state,
 
 ## Seven-minute run of show
 
-Use `Speaker A` and `Speaker B` until the team assigns the sections during task `PRES-3`. Both students must speak and must understand every section.
+This division matches the current deck. Both students must still understand the complete path and be ready to answer questions about any stage.
 
 | Time | Speaker | What to show | What to explain |
 |---|---|---|---|
-| 0:00-0:40 | A | Problem/result slide | Amateur-radio operator, useful alert, and why timely interpretation matters. |
-| 0:40-1:25 | A | NOAA source plus one raw and one canonical record | Source, four canonical fields, event time, and constant Kafka key. Clearly label the replay fixture synthetic. |
-| 1:25-2:10 | B | Architecture chart | Replay/producer, `kp_observations`, consumer, rolling window, outputs, AI boundary, and validation. Give one reason for Kafka: an ordered, replayable event path. |
-| 2:10-4:05 | B, then A | Terminal running `./run_demo.sh` | Follow the 6.3 crossing, duplicate skip, rearm, and second crossing. Do not narrate every normal row. |
-| 4:05-5:05 | A | Alert, metrics summary, and briefing | Show the useful result. State that the calculated facts and rule-based label exist before AI wording. |
-| 5:05-6:05 | B | Evaluation summary | Show expected versus actual counts, fact checks, fallback behavior, and overall PASS. |
-| 6:05-7:00 | A and B | Limitation/next-step slide | Limitation: the live feed may remain quiet and estimated values may be revised. Next step: continuous live polling and a delivery channel after the reproducible core is stable. End with the useful result. |
+| 0:00-0:40 | Noam | Problem/result slide | Amateur-radio operator, useful alert, and why timely interpretation matters. |
+| 0:40-1:25 | Noam | NOAA source plus one raw and one canonical record | Source, four canonical fields, event time, and constant Kafka key. Clearly label the replay fixture synthetic. |
+| 1:25-2:10 | Noam | Architecture chart | Replay/producer, `kp_observations`, consumer, rolling window, outputs, AI boundary, and validation. Explain that Kafka transports and orders messages; the consumer calculates risk. |
+| 2:10-2:30 | Niki | Open `kp_replay.jsonl` and point to the Kp 6.3 row | One JSONL row becomes one validated Kafka message; the whole file is not sent as one message. |
+| 2:30-4:10 | Niki | Terminal running `./run_demo.sh` | Point out publication to the topic, 9 processed messages, the duplicate, and exactly 2 alerts. Do not narrate every normal row. |
+| 4:10-5:25 | Niki | UI from `python -m src.demo_ui` | Show two alerts, the duplicate row, rolling maximum, fallback briefing, and 7/7 evaluation. Trace the Kp 6.3 event to alert 1. |
+| 5:25-5:45 | Niki | Saved live-poller terminal evidence | State that real NOAA observations also enter the same topic, but quiet conditions may not create an alert. Do not run the poller live. |
+| 5:45-6:25 | Niki | AI/evidence slide | AI only words five calculated facts; fallback and validation preserve reproducibility. |
+| 6:25-7:00 | Niki, then Noam | Limitation/next-step slide | Limitation: global estimated Kp is not a forecast or station-level model. Next step: a long-running consumer mode that continuously updates live metrics and the UI. End with the useful result. |
 
 Aim for 6:30-6:45 during rehearsal so a slow transition does not exceed seven minutes.
 
@@ -98,32 +106,87 @@ Keep the visual sequence small and readable:
 2. One slide with the NOAA source, representative raw record, and canonical Kafka event.
 3. One architecture slide showing the implemented path.
 4. One large terminal window for the replay.
-5. One result/evidence view showing the alert, briefing, counts, and validation status.
+5. The local UI showing the alert, briefing, counts, and validation status.
 6. One final slide with the limitation and realistic next step.
 
 Use large text. Do not open an editor and tour the repository. If code must be shown, show only the few lines defining the threshold/crossing rule or event contract, and only when they are easier to understand than the architecture and output.
 
-## Live terminal sequence
+## Exact live demonstration sequence and script
 
 Before presenting, Docker Desktop should already be open and the Python environment should already be installed. These setup commands belong in the README and should not consume presentation time.
 
-The live presentation command is:
+### 1. Show the replay input briefly
+
+Open `data/sample_or_replay_data/kp_replay.jsonl` and point to the Kp 6.3
+representative event. Do not scroll through all nine rows.
+
+Say:
+
+> "This file contains nine labeled observations. The producer reads each row,
+> validates it, and publishes it as a separate Kafka message. The entire file
+> is not sent as one message."
+
+Also state that the `synthetic://kp-threshold-fixture` provenance makes clear
+that these threshold values are not claimed as NOAA history.
+
+### 2. Run the Kafka pipeline
+
+Run:
 
 ```bash
 ./run_demo.sh
 ```
 
-The script should print, without extra manual steps:
+Point out these lines when they appear:
+
+```text
+Published 9 event(s)
+Topic=kp_observations key=planetary_kp
+Processed 9 valid event(s)
+emitted 2 alert(s)
+```
+
+Say:
+
+> "Kafka stores the validated messages in order and makes them available to
+> our independent consumer. Kafka does not calculate the risk. The consumer
+> reads the messages and applies our rolling-window and threshold-crossing
+> rules."
+
+The script also prints:
 
 - Kafka readiness and topic name;
-- the compact event progression;
-- both alert timestamps;
-- message, unique-event, duplicate, and alert counts;
+- publication and processing counts;
 - the four artifact paths;
 - whether the deterministic or model briefing was used; and
-- a final acceptance result of `PASS` or a clear nonzero failure.
+- artifact verification, test results, and a clear nonzero exit on failure.
 
-After the script finishes, show only the most useful artifact excerpts. Candidate commands are:
+### 3. Show the generated result in the UI
+
+After `run_demo.sh` finishes, run:
+
+```bash
+python -m src.demo_ui
+```
+
+Open `http://127.0.0.1:8765` and show, in this order:
+
+1. exactly two emitted alerts;
+2. the `duplicate_skipped` metrics row;
+3. the rolling 15-minute maximum and rule-based label;
+4. the natural-language fallback briefing; and
+5. the 7/7 evaluation result.
+
+Trace the representative event by saying:
+
+> "This Kp 6.3 row was published to Kafka. The consumer read it, calculated a
+> rolling maximum of 6.3, detected the first crossing of Kp 6, and wrote alert
+> number one."
+
+The UI reads the artifacts created by `run_demo.sh`. It does not replace Kafka,
+calculate risk, or generate separate results.
+
+If the UI cannot open, use only these compact artifact commands:
 
 ```bash
 jq '.alerts' outputs/alert.json
@@ -132,7 +195,34 @@ cat outputs/briefing.txt
 jq . evaluation/evaluation.json
 ```
 
-Finalize these commands after the artifact schemas are implemented. Avoid dumping a long evaluation file if a compact summary can show expected versus actual results more clearly.
+Avoid dumping the complete evaluation file if a compact summary is enough.
+
+### 4. Mention live NOAA briefly
+
+Use a saved terminal line such as:
+
+```text
+Published 1 new NOAA event(s) to kp_observations
+```
+
+The number may be greater than one if multiple timestamps appeared since the
+poller's saved checkpoint. Say:
+
+> "The optional poller also publishes current real NOAA observations into the
+> same Kafka topic. We use the labeled replay during the presentation because
+> current conditions may not cross Kp 6."
+
+Do not run the live poller during the seven-minute presentation and do not
+overwrite the replay artifacts before showing the UI.
+
+The complete story should remain:
+
+```text
+Input row -> Kafka message -> consumer calculation -> output artifacts -> UI
+```
+
+The key clarification is: Kafka transports, stores, and orders the messages;
+the Python consumer performs the rolling-window calculation and alert decision.
 
 ## Statements to make during the demo
 
@@ -140,12 +230,16 @@ Use natural language, but cover these facts:
 
 - “This is a deterministic, clearly labeled synthetic replay using the same canonical contract as the real NOAA input.”
 - “Every replay record is published to the real local Kafka topic; demo mode does not bypass Kafka.”
+- “The whole JSONL file is not one Kafka message; each row becomes its own message.”
+- “Kafka transports and orders the events. Our consumer calculates the rolling maximum and decides whether to alert.”
 - “The first alert is created when the rolling 15-minute maximum first crosses from below 6 to at least 6.”
 - “This repeated timestamp is skipped, so it cannot create a second alert.”
 - “Remaining elevated also does not create an alert every minute.”
 - “After the earlier high value leaves the window, the monitor rearms and a later crossing creates a second alert.”
 - “AI did not determine this alert. It only worded the calculated facts, and automatic checks reject unsupported wording.”
 - “The required path works offline and without an API key.”
+- “The UI displays the artifacts created by the Kafka pipeline; it does not calculate the result.”
+- “The optional live poller publishes real NOAA observations to the same topic, but quiet conditions may produce no alert.”
 
 ## Evidence that must be ready
 
@@ -169,6 +263,8 @@ Saved evidence is a backup, not something to conceal. If the live run fails, say
 | No OpenAI key or model unavailable | Use the deterministic briefing and show that fallback was recorded. |
 | Docker/Kafka fails to start | Stop after one quick attempt; switch to the saved terminal output and artifacts. |
 | Terminal output is slow or unreadable | Use the saved result/evidence slide and narrate the two crossings. |
+| UI fails to open | Show the generated JSON, CSV, briefing, and evaluation excerpts in the terminal. |
+| Live NOAA is quiet | Expected; show saved ingestion evidence and use replay to demonstrate the alert logic. |
 | An output differs from the fixture | Do not call it a pass. Use the last known-good saved evidence and state that the live run encountered a problem. |
 | Presentation laptop fails | Keep the slides and known-good evidence available on both partners' computers. |
 
@@ -182,6 +278,9 @@ Do not debug live for more than about 15 seconds. Protect the explanation and ru
 - [ ] The visible counts are 9 consumed, 8 unique, 1 duplicate, and 2 alerts.
 - [ ] Alert timestamps and rolling maxima match `data/fixtures/replay_expected.json`.
 - [ ] Every displayed artifact is regenerated by the demonstrated run.
+- [ ] The UI is started only after `./run_demo.sh` and displays those same artifacts.
+- [ ] The presenter says that each JSONL row becomes one Kafka message.
+- [ ] The presenter says that Kafka transports/orders data and the consumer calculates risk.
 - [ ] The synthetic fixture label is visible or stated aloud.
 - [ ] Both partners can trace one record from JSONL through Kafka to alert and briefing.
 - [ ] Both partners speak, the handoff is rehearsed, and the presentation stays under seven minutes.
@@ -206,17 +305,18 @@ Do not debug live for more than about 15 seconds. Protect the explanation and ru
 
 ## Things not to add for the demo
 
-Do not spend base-project time on:
+Do not spend remaining presentation time on:
 
-- a dashboard or frontend;
+- expanding the optional UI beyond its current artifact-viewer role;
 - maps or geographic radio-impact claims;
 - SMS, email, or push notifications;
 - multiple Kafka topics without a demonstrated need;
 - a forecasting model;
 - a second live source; or
-- a live model call that makes the demonstration less reliable.
+- a live model call that makes the demonstration less reliable; or
+- a live NOAA call during the timed presentation.
 
-Those may be future work, but none is needed to prove the course-sized streaming path.
+Those additions are not needed to prove the course-sized streaming path.
 
 ## Demo is ready when
 

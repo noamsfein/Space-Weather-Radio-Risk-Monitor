@@ -11,15 +11,21 @@ This file documents the source used by the Space Weather Radio-Risk Monitor as i
 | Endpoint | `https://services.swpc.noaa.gov/json/planetary_k_index_1m.json` |
 | Access | Public HTTPS JSON; no API key or account required |
 | Cost | None observed |
-| Runtime access | None. The required demo replays a committed, labeled fixture; live polling was deliberately omitted (see below) |
+| Runtime access | Optional live poller; the required demo still replays a committed, labeled fixture |
 | Project classification | Cached deterministic replay of a validated realtime source |
 | Authentication | None |
 | Rights | NWS public-domain terms unless specifically noted; attribution and no implied endorsement |
 | Personal data | None |
 
-## Decision to omit the live poller
+## Optional live poller
 
-The optional 60-second live poller (checklist task `INGEST-2`) was not implemented. The project checklist keeps it off the critical path, and quiet live data cannot demonstrate the Kp 6 alert anyway (both dated source checks observed a maximum Kp under 3.5). The source's viability is instead proven by the committed raw sample and the dated `source_profile.json`, and `src/contract.py::normalize_noaa_record` converts a raw NOAA record into the same canonical event the replay uses. Tests against the committed sample verify this, so a poller could be added later without changing the contract, topic, or consumer. If one is added, it must poll no faster than every 60 seconds, use a short HTTP timeout, publish only unseen `time_tag` values, log failures rather than fabricate data, and retry on the next interval.
+`src/live_poller.py` optionally fetches this endpoint with a 15-second timeout.
+Its first successful poll uses the complete response as a baseline and publishes
+only the newest valid record, avoiding a six-hour startup backlog. Later polls
+publish each newly appeared `time_tag` once. It polls no faster than every 60
+seconds, logs invalid rows and request failures, and retries recoverable failures
+on the next interval without fabricating data. Quiet live data still cannot
+guarantee a Kp 6 alert, so the required demo remains the deterministic replay.
 
 ## Observed raw schema
 
@@ -79,7 +85,7 @@ The current committed source evidence is under `data/sample_or_replay_data/`. `n
 
 ## Rate limits and failure handling
 
-No explicit endpoint-specific rate limit has been identified in the supplied project materials. Because the live poller was omitted, the implemented system contacts NOAA only during manual, one-time source checks (a single `curl`-style fetch with a 15-second timeout, no parallel calls); the runtime demo makes no NOAA request at all.
+No explicit endpoint-specific rate limit has been identified in the supplied project materials. The optional poller makes one request every 60 seconds with a 15-second timeout and no parallel calls. The required runtime demo makes no NOAA request at all.
 
 Failure handling that is implemented and tested:
 
