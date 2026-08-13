@@ -420,7 +420,7 @@ The live NOAA poller is not on the critical path. Build it only after the replay
   - Print artifact paths and a short result summary.
   - Done when: one command after documented setup runs start to finish, exits nonzero on failure, and three consecutive runs do not reuse stale output or offsets.
 
-- [x] **E2E-1 · Required end-to-end replay acceptance** · Initials: `NN, NF` · PR: `#28, #TBD`
+- [x] **E2E-1 · Required end-to-end replay acceptance** · Initials: `NN, NF` · PR: `#28, #40`
   - Prerequisites: DEMO-1, TEST-1, TEST-2, TEST-3.
   - Branch suffix: `verify-end-to-end-replay`.
   - Run: `./run_demo.sh` through the actual local Kafka broker.
@@ -430,7 +430,7 @@ The live NOAA poller is not on the critical path. Build it only after the replay
   - Niki's run 2026-08-12 (NN): `./run_demo.sh` on merged `main` passed with 9 events through the local broker, 2 alerts at the labeled timestamps, all metrics rows and duplicate counts matching the fixture, a briefing via deterministic fallback, a 7/7 evaluation, and 141 passing tests. Representative artifacts committed under `outputs/` and `evaluation/`.
   - Noam's clean-clone run 2026-08-12 (NF): cloned current `main` at `e01cc1b`, followed the README setup, and ran `./run_demo.sh` through a fresh local broker. The run consumed 9 messages, processed 8 unique events, skipped 1 duplicate, emitted exactly 2 alerts at the labeled timestamps, used the deterministic fallback briefing, passed the 7/7 evaluation, and completed with 167 tests passed plus 3 documented opt-in integration tests skipped. Generated artifacts were byte-identical to the committed evidence. Evidence is also recorded on PR #36.
 
-- [x] **E2E-2 · Offline/no-key acceptance** · Initials: `NN, NF` · PR: `#28, #TBD`
+- [x] **E2E-2 · Offline/no-key acceptance** · Initials: `NN, NF` · PR: `#28, #40`
   - Prerequisites: E2E-1.
   - Branch suffix: `verify-offline-fallback`.
   - Run with `OPENAI_API_KEY` unset and without relying on NOAA.
@@ -461,7 +461,7 @@ The live NOAA poller is not on the critical path. Build it only after the replay
 
 ## Phase 6: README, report, and rubric evidence
 
-- [x] **DOC-1 · Make README commands factual** · Initials: `NN, NF` · PR: `#29, #TBD`
+- [x] **DOC-1 · Make README commands factual** · Initials: `NN, NF` · PR: `#29, #40`
   - Prerequisites: E2E-1.
   - Replace target/planned language with exact tested prerequisites, setup, one-command run, expected output, validation, troubleshooting, and cleanup.
   - Map any layout differences from the required package structure.
