@@ -1,126 +1,219 @@
 # AI Usage and Verification
 
-This project has two distinct AI disclosures: the bounded runtime briefing and AI assistance used while preparing or developing the project. This file begins as the agreed plan and must be updated with actual model names, examples, decisions, and evidence before submission.
+This project uses AI in two separate ways: an optional runtime briefing and
+AI-assisted project development. The runtime model is restricted to wording
+facts that the deterministic stream processor has already calculated. It does
+not read the raw Kafka stream, calculate Kp metrics, assign the risk label, or
+decide whether to emit an alert.
 
-## Bounded runtime AI task
+## Runtime AI configuration
 
-The language model may convert already calculated alert facts into a two-sentence briefing for an amateur-radio operator.
+| Setting | Implemented value |
+|---|---|
+| Provider | OpenAI |
+| API | Responses API (`client.responses.create`) |
+| Configured model identifier | `gpt-5-nano` |
+| Reasoning effort | `low` |
+| Maximum output tokens | 600 |
+| Client timeout | 10 seconds |
+| Automatic retries | 0 |
+| Required for the replay demo | No |
 
-Planned input:
+`gpt-5-nano` is the exact model alias sent by the application. The project does
+not claim a snapshot identifier because no committed live response records the
+resolved snapshot. The model can be overridden locally with `OPENAI_MODEL`, but
+the committed configuration, documentation, and deterministic evaluation all
+use `gpt-5-nano`.
+
+The live path is optional and explicit:
+
+```bash
+python -m src.briefing --use-live-ai \
+  --candidate-path evaluation/live_candidate.txt
+```
+
+Only this command loads `.env`. The required replay path uses the deterministic
+fallback and neither reads an API key nor contacts OpenAI. API keys are private,
+local values; `.env` is ignored and `.env.example` contains no credential.
+
+## Input and authority boundary
+
+The model receives exactly five fields from the most recent deterministic
+alert. The representative input from the committed replay is:
 
 ```json
 {
-  "latest_kp": 6.33,
-  "rolling_15m_max_kp": 6.67,
-  "window_start_utc": "2026-08-11T15:10:00Z",
-  "window_end_utc": "2026-08-11T15:25:00Z",
+  "latest_kp": 7.0,
+  "rolling_15m_max_kp": 7.0,
+  "window_start_utc": "2026-08-11T00:12:00Z",
+  "window_end_utc": "2026-08-11T00:27:00Z",
   "risk_label": "elevated"
 }
 ```
 
-Planned output artifact: `outputs/briefing.txt`
+The application serializes this as compact, sorted JSON. The deterministic
+consumer owns:
 
-The AI does not consume the raw stream and does not decide whether an alert exists.
+- validation and normalization of the source event;
+- the inclusive rolling 15-minute maximum;
+- the Kp 6 alert threshold;
+- the `normal` or `elevated` risk label;
+- the threshold-crossing decision; and
+- every number and timestamp supplied to the model.
 
-## Authority boundary
+The model owns only the wording of a briefing. It may not trigger, suppress, or
+reclassify an alert; alter a value or timestamp; assert a cause, location,
+impact, or forecast; or give an operational recommendation.
 
-The deterministic consumer owns:
+## Exact prompt
 
-- the rolling-window calculation;
-- the Kp 6 threshold;
-- the risk label;
-- the decision to emit an alert; and
-- every number and timestamp passed to the model.
+The following instruction is defined as `MODEL_INSTRUCTIONS` in
+`src/briefing.py` and saved in `evaluation/evaluation.json`:
 
-The model owns only wording. It may not:
+> Write a concise briefing of no more than two sentences using only the facts
+> supplied as JSON. Include the rule-based risk label. Do not add causes,
+> locations, impacts, recommendations, forecasts, or any numbers or timestamps
+> that are not supplied. Return only the briefing text.
 
-- trigger, suppress, or reclassify an alert;
-- change a number, label, or timestamp;
-- claim a specific cause;
-- add an unsupported location or impact; or
-- give operational recommendations.
+The JSON shown above is passed separately as the Responses API input. No raw
+NOAA record, Kafka metadata, alert rule, source description, user profile, or
+location is sent to the model.
 
-## Verification
+## Output validation and fallback
 
-The briefing is accepted only if automatic checks confirm that it is consistent with the input facts. At minimum, the validator must:
+`validate_briefing` applies six deterministic checks before model text can be
+written as the accepted briefing:
 
-- reject any numeric Kp value not present in the approved input;
-- reject a risk label that differs from the deterministic label;
-- reject unsupported causes, locations, and recommendations;
-- enforce the two-sentence limit; and
-- save the pass/fail decision and rejection reason.
+1. `nonempty` rejects a missing or whitespace-only response.
+2. `sentence_limit` allows no more than two detected sentences.
+3. `risk_label` requires the unnegated word `elevated` and rejects a conflicting
+   known label such as `normal`.
+4. `approved_numbers` rejects numeric values other than the supplied Kp values;
+   the phrase `15-minute` is explicitly allowed.
+5. `approved_timestamps` rejects ISO-like timestamps outside the supplied UTC
+   window.
+6. `unsupported_details` rejects matched cause, location, impact, and
+   recommendation phrases.
 
-The exact checks and their limitations must be documented in the final report. A human spot-check is additional evidence, not a replacement for automated validation.
+The validator returns every check result and explicit rejection reasons. It
+does not edit or repair a failed response. A candidate is used only when all
+checks pass. Otherwise, the output comes from this deterministic two-sentence
+template:
 
-## Evaluation set
+> Elevated radio-risk conditions were detected with a latest Kp of 7 and a
+> rolling 15-minute maximum of 7. The UTC window ran from
+> 2026-08-11T00:12:00Z to 2026-08-11T00:27:00Z, and the rule-based risk label
+> was elevated.
 
-The committed `evaluation/evaluation.json` includes these fixed cases:
+The same fallback is used when live AI was not requested, the API key is
+missing, no alert facts exist, the request fails, the response has no text, or
+the response fails validation. A separate no-alert template contains no Kp
+number or timestamp.
 
-| Case | Candidate behavior | Expected decision |
-|---|---|---|
-| Correct facts | Uses only supplied values, UTC window, and label | Accept |
-| Wrong Kp | Changes or invents a Kp number | Reject |
-| Wrong label | Describes a different risk state | Reject |
-| Unsupported detail | Adds a cause, location, or recommendation not supplied | Reject |
-| Too long | Exceeds two sentences | Reject |
-| API unavailable | No model response | Use deterministic fallback |
+## Saved evaluation evidence
 
-Each saved case includes the model input, candidate output, expected decision,
-actual decision, check results, fallback status, and whether expected matched
-actual. These strings are project-authored boundary tests and are not presented
-as fresh live-model responses. Run `python -m src.evaluate` to regenerate the
-artifact without Kafka, an API key, or network access. The command exits nonzero
-if an expected result does not match.
+Run this command to regenerate the committed evidence without Kafka, a key, or
+network access:
 
-## Fallback
+```bash
+python -m src.evaluate
+```
 
-If no API key is provided, the request fails, or the response is rejected, the project writes a deterministic two-sentence template using the same approved facts. The required replay demo must succeed without an API key.
+`evaluation/evaluation.json` records the provider, configured model, exact
+prompt, five-field input boundary, model input, candidate output,
+expected/actual decision, individual checks, rejection reasons, fallback
+status, and expected-versus-actual result for each case. It also replays the
+canonical events in memory and compares the two produced alerts with the
+committed oracle.
 
-The fallback is part of the base design, not a hidden error path. `evaluation.json` must state whether the model or fallback produced the representative briefing.
+The current saved result is 7/7 assertions passed: one alert comparison and six
+AI boundary cases.
 
-## Runtime AI evidence to save
+| Case | Saved candidate behavior | Actual decision | Final source |
+|---|---|---|---|
+| `correct` | Uses the supplied values, window, and label | Accepted | Candidate |
+| `wrong_number` | Claims Kp 8 | Rejected: unsupported number | Fallback |
+| `wrong_label` | Claims `normal` | Rejected: wrong label | Fallback |
+| `unsupported_detail` | Attributes conditions to a solar flare | Rejected: unsupported cause | Fallback |
+| `too_long` | Returns three sentences | Rejected: sentence limit | Fallback |
+| `api_unavailable` | Simulates a timeout and returns no candidate | Unavailable | Fallback |
 
-- [ ] Exact provider and model identifier.
-- [ ] Prompt or prompt template.
-- [ ] Representative model input.
-- [ ] One accepted response with validator results.
-- [ ] At least two rejected responses with specific rejection reasons.
-- [ ] Deterministic fallback output.
-- [ ] Evaluation summary and known validator gaps.
-- [ ] Instructions for optional API-key setup, with no secret committed.
+The accepted candidate in the deterministic evaluation is the project-authored
+fallback text shown above. The rejected candidates are also project-authored
+boundary tests. They are not represented as outputs from a fresh live model
+call. If the optional live command is run, its raw response can be saved to the
+git-ignored `evaluation/live_candidate.txt`; it is still used only after the
+same validator accepts it.
+
+## Verification performed
+
+- `python -m src.evaluate` regenerates the evidence deterministically and exits
+  nonzero if an expected alert or AI decision does not match.
+- `tests/test_briefing.py` covers the five-field input boundary, exact fallback,
+  request arguments, missing credentials, timeout, malformed output, accepted
+  and rejected candidates, candidate saving, and atomic writes.
+- `tests/test_evaluate.py` verifies all six saved cases, evidence fields,
+  byte-for-byte deterministic output, no-network behavior, failure exit status,
+  and atomic writes.
+- The full local suite on 2026-08-12 passed: 147 tests passed and 3 opt-in Kafka
+  integration tests were skipped.
+- The committed required demo evidence records two expected alerts, nine
+  metrics rows, and 7/7 evaluation assertions without an OpenAI request.
+
+## Runtime evidence checklist
+
+- [x] Provider and configured model identifier: OpenAI, `gpt-5-nano`.
+- [x] Exact prompt template.
+- [x] Representative input from the committed replay.
+- [x] Accepted project-authored candidate with all validator results.
+- [x] Four rejected candidates with specific rejection reasons.
+- [x] Simulated API-unavailable case and deterministic fallback.
+- [x] Evaluation summary and validator limitations.
+- [x] Optional private API-key setup with no committed secret.
+- [ ] A live model candidate and resolved snapshot identifier. This is optional,
+  is not required for the deterministic demo, and has not been claimed as saved
+  evidence.
 
 ## AI-assisted project development
 
-OpenAI Codex and ChatGPT helped compare project ideas, organize proposal sections, edit wording, and create the initial project plan and documentation scaffolds. Noam Fein and Niki Naderzad selected the topic, verified the course requirements and NOAA source, reviewed and revised generated content, and own the implementation, testing, evaluation, report, and explanation.
+OpenAI Codex and ChatGPT assisted with ideation, planning, documentation,
+implementation drafts, tests, and review. Noam Fein and Niki Naderzad selected
+the topic and scope, verified the course requirements and NOAA source, accepted
+or changed design choices, ran the project, reviewed generated work, and remain
+responsible for the submitted implementation and explanation.
 
-Before submission, add actual development uses to this log rather than making a broad claim that AI “built the project.”
-
-| Date | Tool | Task | What students changed or decided | How students verified it |
+| Date | Tool | Assisted task | Student decision or revision | Verification |
 |---|---|---|---|---|
-| 2026-08-04 | Codex and ChatGPT | Compared ideas and drafted/reviewed proposal wording | Selected NOAA Kp topic, reduced scope, fixed alert semantics and AI boundary | Checked proposal template, proposal rubric, source, and final PDF |
-| 2026-08-11 | Codex | Drafted README, source notes, AI plan, and incremental checklist | Team must review assignments, commands, schema, and deadlines before implementation | Compared with final-project requirements, written rubric, presentation rubric, proposal, and NOAA sample |
-| 2026-08-12 | Codex | Scaffolded the repository and configured the Python environment | Noam chose local Docker Kafka and kept the dependency set limited to the planned implementation | Installed from scratch with Python 3.11 and ran dependency smoke tests without secrets |
-| 2026-08-12 | Codex | Configured the local Kafka broker | Noam chose Docker over Confluent Cloud; the project uses one official Kafka image and no extra services | Validated Compose, broker health, topic access, message round-trip, restart, and cleanup |
-| 2026-08-12 | Codex | Implemented the canonical Kafka event contract | Noam retained the agreed four fields, documented provenance allowlist, and strict validation boundary | Tested every committed NOAA/replay/invalid fixture plus timestamp, Kp, schema, serialization, and immutability edge cases |
-| 2026-08-12 | Codex | Froze the representative Kafka event | Noam selected the first synthetic Kp 6.3 crossing because it connects the event contract to the demonstrated alert | Tested the saved event against `KpEvent`, the replay source row, and the README copy |
-| 2026-08-12 | Codex | Implemented reusable Kafka I/O | Noam retained one local broker, topic, partition, and constant key for the ordered global stream | Ran unit failure cases and a real Docker produce/consume round-trip before and after a clean broker restart |
-| 2026-08-12 | Codex | Implemented deterministic replay ingestion | Noam kept the nine-event fixture as the required demo and preserved its deliberate duplicate | Tested full-file validation, ordering, delay, delivery failure, and exact nine-message order through real Kafka |
-| 2026-08-12 | Codex | Implemented rolling event-time processing | Noam retained an inclusive 15-minute window and time-tag deduplication; late records are skipped rather than silently rewriting ordered state | Matched every committed expected maximum/status and tested boundary, expiry, duplicate, late-event, and state-invariance cases |
-| 2026-08-12 | Codex | Implemented deterministic alert crossing state | Noam retained the rule that Kp 6 is inclusive, sustained elevation produces no repeat alert, and the alert rearms only after the rolling maximum falls below 6 | Tested exact threshold, direct jump, sustained elevation, duplicate and late records, window expiry, second crossing, and all expected replay labels and alert times |
-| 2026-08-12 | Codex | Implemented deterministic JSON alert output | Noam retained a compact rule-based artifact with stable alert IDs, both replay crossings, UTC windows, source provenance, and run counts | Compared alert facts and counts with the committed replay oracle and tested valid JSON, no-alert output, atomic replacement, and failure cleanup |
-| 2026-08-12 | Codex | Implemented row-level CSV metrics output | Noam retained a fixed six-column CSV with one row per consumed message, including skipped duplicates | Compared all nine rows and their order with the replay oracle and tested the exact header, duplicate row, header-only output, atomic replacement, and failure cleanup |
-| 2026-08-12 | Codex | Connected Kafka consumption to processing and output writers | Noam retained a finite nine-event run, bounded idle timeout, malformed-message skip/report behavior, and deterministic local outputs | Tested lifecycle and failure paths with fakes, then published and consumed the full replay through Docker Kafka and compared both generated artifacts with the committed oracle |
-| 2026-08-12 | Codex | Implemented structured briefing facts and deterministic fallback | Noam retained a five-field wording boundary, the most recent alert as the briefing subject, and a no-alert form that invents no values | Tested exact two-sentence outputs, field provenance from `alert.json`, strict schema rejection, no-key operation, and atomic-write failure cleanup |
-| 2026-08-12 | Codex | Implemented deterministic briefing validation | Noam retained explicit checks and rejection reasons instead of automatic repair, plus conservative rejection of unsupported causes, locations, impacts, and recommendations | Tested fixed accepted, wrong-number, wrong-label, unsupported-detail, too-long, empty, and wrong-timestamp candidates without a model or network call |
-| 2026-08-12 | Codex | Implemented deterministic alert and briefing evaluation evidence | Noam retained fixed project-authored cases, explicit provenance, expected-versus-actual decisions, and a no-network failure simulation | Regenerated `evaluation.json`, matched replay alerts to the committed oracle, verified all six AI cases, and proved a deliberately wrong expectation makes the command fail |
-| YYYY-MM-DD | Tool/model | Describe the specific task | Describe the human decision or edit | Name the test, review, or evidence |
+| 2026-08-04 | Codex and ChatGPT | Compared ideas and drafted/reviewed proposal wording | Selected the NOAA Kp topic, reduced scope, and fixed the alert semantics and AI authority boundary | Checked the proposal template, rubrics, source, and final PDF |
+| 2026-08-11 | Codex | Drafted the README, source notes, AI plan, and incremental checklist | Kept a deterministic replay as the required path and made live NOAA and OpenAI optional | Compared the plan with the proposal, rubrics, and NOAA sample |
+| 2026-08-12 | Codex | Scaffolded the repository, Python environment, and local Kafka setup | Chose local Docker Kafka, one topic and partition, and a limited pinned dependency set | Reinstalled dependencies and tested broker health, round trips, restart, and cleanup |
+| 2026-08-12 | Codex | Drafted the event contract, replay producer, Kafka I/O, processor, and output writers | Retained four canonical fields, constant-key ordering, event-time deduplication, an inclusive window, threshold crossing/rearm semantics, and atomic artifacts | Tested fixtures and edge cases, then compared the real Kafka path with the committed oracle |
+| 2026-08-12 | Codex | Drafted the bounded briefing, validator, fallback, and evaluation harness | Retained a five-field wording-only boundary, explicit rejection instead of repair, a no-key fallback, and project-authored evaluation cases | Ran briefing/evaluation tests, regenerated saved evidence, and confirmed a deliberately wrong expectation fails |
+| 2026-08-12 | Codex | Reviewed the repository and completed this AI disclosure | Required honest separation between deterministic cases and live model evidence; did not claim an unsaved live call | Ran the full local suite (147 passed, 3 skipped) and regenerated `evaluation/evaluation.json` |
+
+This log describes assistance, not authorship or independent verification by the
+model. Team members should review this disclosure and add any material AI use
+that is not represented here before submission.
 
 ## Known limitations
 
-- String and number checks cannot prove that every sentence is scientifically complete or well phrased.
-- A response can avoid banned terms and still be misleading.
-- Provider or model behavior can change.
-- Saved responses demonstrate the tested cases, not all possible outputs.
-- The deterministic fallback is more reliable but less natural.
+- The validator uses regular expressions and a finite banned-phrase list. It
+  cannot prove that every accepted sentence is scientifically complete,
+  semantically faithful, or well written.
+- Sentence detection is punctuation-based and can miscount unusual
+  abbreviations or formatting.
+- Numeric equality accepts equivalent formatting such as `7` and `7.0`, but it
+  does not understand more complex paraphrases or word-form numbers.
+- A response could avoid the known unsupported-detail patterns and still imply
+  an unsupported cause, impact, location, forecast, or recommendation.
+- The validator requires the correct risk label but does not require every
+  supplied number and timestamp to appear.
+- The configured model name is an alias, so provider behavior can change unless
+  a supported snapshot is selected and recorded.
+- Fixed candidates cover the stated boundaries, not every possible model
+  output. No committed artifact is presented as a fresh live-model response.
+- The deterministic fallback is less natural than generated prose, but it is
+  the safer result when any check is uncertain.
 
-The team should prefer rejecting an uncertain briefing over weakening the deterministic alert path.
+The system therefore prefers rejecting an uncertain candidate and preserving
+the deterministic alert path over weakening validation to accept more prose.
