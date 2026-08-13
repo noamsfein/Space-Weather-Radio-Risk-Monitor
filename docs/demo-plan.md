@@ -215,6 +215,87 @@ poller's saved checkpoint. Say:
 Do not run the live poller during the seven-minute presentation and do not
 overwrite the replay artifacts before showing the UI.
 
+## How the live NOAA path works
+
+Use this section to answer questions after briefly mentioning live ingestion.
+The poller does not download a permanent NOAA data file before publishing.
+
+1. `src/live_poller.py` requests NOAA's public JSON response and holds it in
+   memory.
+2. It compares NOAA `time_tag` values with its local checkpoint and selects only
+   observations newer than the latest one already handled.
+3. It converts each selected observation into the same four-field event used by
+   the replay: `time_tag`, `kp_value`, `source`, and `ingested_at`.
+4. It sends each event directly to the Kafka broker running inside Docker.
+5. Kafka appends each event as a separate message in the `kp_observations`
+   topic. Kafka does not calculate or change the risk value.
+6. A consumer reads those messages, performs deduplication and the rolling
+   15-minute calculation, and writes `metrics.csv` and `alert.json`. The current
+   consumer is finite; continuous live output and automatic UI refresh are the
+   next step.
+
+The poller writes only `.state/live_poller.json`, which stores the newest
+handled `time_tag` so a restarted poller does not republish the same NOAA
+observation. It is a checkpoint, not a copy of the NOAA dataset.
+
+### What the two timestamps mean
+
+- `time_tag` is when NOAA says the Kp estimate applies. It identifies the
+  observation and is used for duplicate prevention and event-time processing.
+- `ingested_at` is when our application fetched and converted that observation.
+
+New observations are appended to Kafka as new messages; they do not replace the
+older Kafka messages. Kafka assigns each message a new offset. The topic acts as
+an ordered log, not as a CSV file with rows.
+
+### One fetch versus continuous polling
+
+Fetch NOAA once, publish timestamps newer than the checkpoint, and exit:
+
+```bash
+python -m src.live_poller --once
+```
+
+Fetch immediately and then automatically check again every 60 seconds until
+the process is stopped with `Ctrl-C`:
+
+```bash
+python -m src.live_poller
+```
+
+The poller is not automatically started by Docker, Kafka, the UI, or
+`run_demo.sh`. Someone must start one of these commands. A single poll can
+publish multiple real observations if several new timestamps appeared after the
+checkpoint. On the first run with no checkpoint, the poller uses NOAA's complete
+response as a baseline and publishes only its newest observation so it does not
+mistakenly send approximately six hours of older records as a new backlog.
+
+### What `run_demo.sh` resets
+
+`run_demo.sh` intentionally removes and recreates the local Kafka broker state
+before publishing the nine synthetic replay messages. Any live NOAA messages
+previously stored in that local Kafka topic are therefore removed. The NOAA
+website, committed source sample, and `.state/live_poller.json` checkpoint are
+not removed. After the demo, the poller can fetch and publish newer NOAA
+observations again.
+
+For a clean one-time live demonstration after the replay, use a separate
+temporary checkpoint:
+
+```bash
+python -m src.live_poller --once \
+  --state-file /tmp/space-weather-live-demo-state.json
+```
+
+Student-friendly summary to say if asked:
+
+> "The live poller reads NOAA's JSON into memory, converts each new timestamp
+> into our four-field event, and sends it directly to Kafka in Docker. Kafka
+> appends and orders those messages. Our consumer, not Kafka, calculates the
+> rolling risk and creates the output files. We can fetch once with `--once` or
+> leave the poller running to check every 60 seconds. The replay script resets
+> local Kafka data so every graded demo starts clean."
+
 The complete story should remain:
 
 ```text
@@ -312,7 +393,7 @@ Do not spend remaining presentation time on:
 - SMS, email, or push notifications;
 - multiple Kafka topics without a demonstrated need;
 - a forecasting model;
-- a second live source; or
+- a second live source;
 - a live model call that makes the demonstration less reliable; or
 - a live NOAA call during the timed presentation.
 

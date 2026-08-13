@@ -2,273 +2,265 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<title>Space Weather Radio-Risk Monitor — Presentation</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Space Weather Radio-Risk Monitor</title>
 <style>
   @page { size: 13.333in 7.5in; margin: 0; }
+  :root {
+    --navy: #102a43;
+    --blue: #2f6fed;
+    --orange: #f4a261;
+    --cream: #f8f6f1;
+    --ink: #17212b;
+    --muted: #617080;
+    --line: #d7dee5;
+    --green: #2a9d67;
+  }
   * { box-sizing: border-box; }
-  html, body { margin: 0; padding: 0; background: #111; }
-  body { font-family: "Helvetica Neue", Helvetica, Arial, sans-serif; }
+  html, body { margin: 0; padding: 0; background: #111820; }
+  body { font-family: Inter, "Helvetica Neue", Arial, sans-serif; }
   .slide {
-    width: 100vw; height: 100vh;
-    padding: 4.5vh 6vw; position: relative;
-    background: #fbfaf7; color: #1c1c1c;
+    width: 100vw; height: 100vh; min-height: 100vh;
+    padding: 5.6vh 6.2vw 5vh; position: relative; overflow: hidden;
+    background: var(--cream); color: var(--ink);
     display: flex; flex-direction: column;
-    page-break-after: always; overflow: hidden;
+    page-break-after: always;
   }
   @media print {
-    .slide { width: 13.333in; height: 7.5in; padding: 0.45in 0.8in; }
+    .slide { width: 13.333in; height: 7.5in; min-height: 7.5in; padding: .48in .82in .43in; }
   }
-  h1 { font-size: 5.2vh; margin: 0 0 1.2vh; color: #14324f; }
-  h2 { font-size: 2.6vh; font-weight: 600; color: #666; margin: 0 0 2.4vh; }
-  p, li { font-size: 2.9vh; line-height: 1.45; }
-  ul { margin: 0.6vh 0; padding-left: 3.4vw; }
-  li { margin: 1.1vh 0; }
-  b { color: #14324f; }
+  h1 { margin: 0; color: var(--navy); font-size: 5.3vh; line-height: 1.08; letter-spacing: -.025em; }
+  h2 { margin: 1.1vh 0 0; color: var(--muted); font-size: 2.55vh; line-height: 1.32; font-weight: 500; }
+  p, li { font-size: 2.7vh; line-height: 1.38; }
+  ul { margin: 2.2vh 0 0; padding-left: 2.2vw; }
+  li { margin: 1.25vh 0; }
+  strong { color: var(--navy); }
   code, pre { font-family: "SF Mono", Menlo, Consolas, monospace; }
-  code { background: #ececec; padding: 0.1em 0.25em; border-radius: 3px; font-size: 0.92em; }
-  pre {
-    background: #14181d; color: #d9e2ea; border-radius: 8px;
-    padding: 1.8vh 1.6vw; font-size: 2.1vh; line-height: 1.4;
-    overflow: hidden; margin: 1vh 0;
+  code { background: #e8edf2; padding: .08em .28em; border-radius: 4px; }
+  .eyebrow { color: var(--blue); font-size: 1.8vh; font-weight: 800; letter-spacing: .12em; text-transform: uppercase; margin-bottom: 1.4vh; }
+  .footer { position: absolute; left: 6.2vw; right: 6.2vw; bottom: 1.7vh; display: flex; justify-content: space-between; color: #8894a0; font-size: 1.65vh; }
+  .accent-line { width: 9vw; height: .65vh; background: var(--orange); margin: 2.4vh 0; border-radius: 9px; }
+  .title { justify-content: center; background: var(--navy); color: white; }
+  .title h1 { color: white; font-size: 8vh; max-width: 74vw; }
+  .title .sub { margin: 2.2vh 0 0; color: #d9e6f1; font-size: 3vh; max-width: 65vw; }
+  .title .team { margin-top: 5vh; color: white; font-size: 2.35vh; }
+  .title .footer { color: #9db2c5; }
+  .split { display: grid; grid-template-columns: 1fr 1fr; gap: 4.6vw; align-items: center; flex: 1; }
+  .metric { color: var(--navy); font-size: 8.8vh; line-height: 1; font-weight: 800; letter-spacing: -.04em; }
+  .metric-label { color: var(--muted); font-size: 2.55vh; line-height: 1.35; margin-top: 1.2vh; max-width: 32vw; }
+  .rule { border-left: .65vw solid var(--orange); padding: 1.5vh 0 1.5vh 2.2vw; font-size: 3.7vh; line-height: 1.28; color: var(--navy); font-weight: 700; }
+  .event {
+    background: var(--navy); color: #eaf1f7; border-radius: 14px;
+    padding: 3vh 2.4vw; font-size: 2.2vh; line-height: 1.6; margin: 2vh 0 0;
   }
-  pre .ok { color: #7fd48a; } pre .hot { color: #ffb454; }
-  .speaker {
-    position: absolute; top: 2.2vh; right: 2.2vw;
-    font-size: 1.9vh; color: #fff; background: #14324f;
-    padding: 0.5vh 1.1vw; border-radius: 99px;
-  }
-  .footer {
-    position: absolute; bottom: 1.8vh; left: 6vw; right: 6vw;
-    font-size: 1.8vh; color: #999; display: flex; justify-content: space-between;
-  }
-  .cols { display: flex; gap: 3vw; align-items: flex-start; }
-  .cols > div { flex: 1; min-width: 0; }
-  table { border-collapse: collapse; width: 100%; font-size: 2.2vh; }
-  th, td { border: 1px solid #c9c4ba; padding: 0.7vh 0.7vw; text-align: left; }
-  th { background: #ece8e0; }
-  .true { background: #e4f4e4; font-weight: 700; }
-  .dup { background: #fdf3dd; font-weight: 700; }
-  .bigfact {
-    background: #14324f; color: #fff; border-radius: 10px;
-    padding: 2vh 2vw; font-size: 3.2vh; margin: 1.4vh 0;
-  }
-  .bigfact b { color: #ffd479; }
-  .flow { display: flex; align-items: stretch; gap: 0.9vw; margin: 2vh 0; }
-  .box {
-    background: #fff; border: 2px solid #14324f; border-radius: 8px;
-    padding: 1.4vh 1vw; font-size: 2.1vh; flex: 1; text-align: center;
-    display: flex; flex-direction: column; justify-content: center;
-  }
-  .box small { color: #666; font-size: 1.7vh; }
-  .arrow { align-self: center; font-size: 3vh; color: #14324f; }
-  .optional { border-style: dashed; border-color: #a05a2c; color: #6d4a2f; background: #fdf8f1; }
-  .titleslide { justify-content: center; text-align: center; }
-  .titleslide h1 { font-size: 7.5vh; }
-  .titleslide p { font-size: 3.2vh; color: #444; }
+  .event .key { color: #8fc4ff; } .event .value { color: #ffd28c; }
+  .source-note { font-size: 1.9vh; color: var(--muted); margin-top: 1.5vh; }
+  .pipeline { display: flex; align-items: stretch; gap: .65vw; margin: 5.2vh 0 3vh; }
+  .stage { flex: 1; border-top: .55vh solid var(--blue); padding: 2.1vh 1.1vw 1.5vh; background: white; }
+  .stage:nth-child(5) { border-color: var(--orange); }
+  .stage b { display: block; color: var(--navy); font-size: 2.15vh; margin-bottom: .8vh; }
+  .stage span { color: var(--muted); font-size: 1.75vh; line-height: 1.34; }
+  .arrow { align-self: center; color: var(--blue); font-size: 3.2vh; }
+  .design-choice { font-size: 2.55vh; line-height: 1.4; margin-top: 1.2vh; }
+  .cue { background: var(--blue); color: white; justify-content: center; text-align: center; }
+  .cue h1 { color: white; font-size: 8vh; }
+  .cue .prompt { color: #dfe9ff; font-size: 3vh; margin: 2vh auto 4vh; }
+  .cue-flow { display: flex; justify-content: center; align-items: center; gap: 1.8vw; }
+  .cue-step { width: 23vw; border-top: 1px solid rgba(255,255,255,.6); padding-top: 2vh; text-align: left; }
+  .cue-step b { display: block; color: white; font-size: 2.7vh; margin-bottom: .8vh; }
+  .cue-step span { color: #dfe9ff; font-size: 2.1vh; line-height: 1.35; }
+  .cue .footer { color: #cbd9ff; }
+  .results { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 2.2vw; margin-top: 4.2vh; }
+  .result { padding-top: 2.2vh; border-top: .5vh solid var(--blue); }
+  .result:nth-child(2) { border-color: var(--orange); }
+  .result:nth-child(3) { border-color: var(--green); }
+  .result .number { font-size: 5.6vh; color: var(--navy); font-weight: 800; }
+  .result p { margin: .8vh 0 0; font-size: 2.15vh; color: var(--muted); }
+  .evidence-line { margin-top: 4vh; font-size: 2.45vh; color: var(--ink); }
+  .boundary { display: grid; grid-template-columns: 1fr auto 1fr; gap: 2vw; align-items: center; flex: 1; margin-top: 2vh; }
+  .boundary-col { padding: 2.4vh 2vw; }
+  .boundary-col.good { border-top: .6vh solid var(--green); }
+  .boundary-col.limited { border-top: .6vh solid var(--orange); }
+  .boundary h3 { color: var(--navy); margin: 0 0 1.2vh; font-size: 2.8vh; }
+  .boundary p { margin: .8vh 0; font-size: 2.25vh; color: var(--muted); }
+  .boundary-arrow { color: var(--blue); font-size: 4vh; }
+  .closing { display: grid; grid-template-columns: 1fr 1fr; gap: 4vw; flex: 1; align-items: center; }
+  .closing h3 { color: var(--blue); font-size: 2.2vh; text-transform: uppercase; letter-spacing: .08em; margin: 0 0 1.2vh; }
+  .closing p { font-size: 2.8vh; margin: 0 0 3.6vh; }
+  .final-line { background: var(--navy); color: white; padding: 3.3vh 2.5vw; font-size: 3.15vh; line-height: 1.28; }
+  .terminal { background: #101820; color: #dce8f2; padding: 2.7vh 2.3vw; border-radius: 12px; margin-top: 2.8vh; font-size: 2.05vh; line-height: 1.55; }
+  .ok { color: #7fe3a7; } .hot { color: #ffd28c; }
+  .speaker-notes { display: none; }
 </style>
 </head>
 <body>
 
-<!-- 1 · TITLE -->
-<section class="slide titleslide">
-  <h1>Space Weather Radio-Risk Monitor</h1>
-  <p>A Kafka alert for amateur-radio operators when planetary Kp crosses storm level</p>
-  <p><b>Noam Fein</b> &amp; <b>Niki Naderzad</b> · MSDS 682 Data Stream Processing · August 13, 2026</p>
-  <div class="footer"><span>github.com/noamsfein/Space-Weather-Radio-Risk-Monitor</span><span>1 / 9</span></div>
+<section class="slide title" id="slide-1">
+  <div class="eyebrow" style="color:#8fc4ff">MSDS 682 · Data Stream Processing</div>
+  <h1>Space Weather<br>Radio-Risk Monitor</h1>
+  <div class="accent-line"></div>
+  <p class="sub">A reproducible Kafka alert when planetary Kp crosses an elevated-risk threshold.</p>
+  <p class="team">Noam Fein · Niki Naderzad</p>
+  <div class="footer"><span>August 13, 2026</span><span>1</span></div>
+  <aside class="speaker-notes">Noam · 0:20. Open with the user and result, not implementation. [Sources] Course presentation rubric; project repository.</aside>
 </section>
 
-<!-- 2 · PROBLEM & RESULT -->
-<section class="slide">
-  <span class="speaker">Noam · ~1 min</span>
-  <h1>The problem, the user, the result</h1>
-  <h2>Presentation rubric 1 — problem, user, useful result, why it matters</h2>
-  <ul>
-    <li><b>User:</b> an amateur-radio operator who relies on HF propagation.</li>
-    <li><b>Problem:</b> geomagnetic storms degrade HF; NOAA's Kp estimate updates every minute, but nobody wants to watch a feed.</li>
-    <li><b>Rule:</b> alert when the rolling 15-minute max Kp crosses from <b>below 6</b> to <b>≥ 6</b> (G2 storm — NOAA: HF can fade at higher latitudes). Rearm only after it falls below 6.</li>
-  </ul>
-  <div class="bigfact">Result: a validated Kafka stream turns 9 replayed observations into <b>exactly 2 machine-readable alerts</b> — no spam while conditions stay elevated, no AI in the decision.</div>
-  <div class="footer"><span>Space Weather Radio-Risk Monitor</span><span>2 / 9</span></div>
-</section>
-
-<!-- 3 · SOURCE & EVENT -->
-<section class="slide">
-  <span class="speaker">Noam · ~1 min</span>
-  <h1>NOAA source → one validated event</h1>
-  <h2>Presentation rubric 2 — source, Kafka event, key fields, representative record</h2>
-  <div class="cols">
+<section class="slide" id="slide-2">
+  <div class="eyebrow">Problem and useful result</div>
+  <h1>A radio operator needs a signal, not another feed to watch</h1>
+  <div class="split">
     <div>
-      <ul>
-        <li><b>Source:</b> NOAA SWPC <code>planetary_k_index_1m.json</code> — public, no key. Values are <i>estimated, preliminary, global</i>.</li>
-        <li>Raw <code>estimated_kp</code> → canonical <code>kp_value</code>; every event passes one Pydantic contract (UTC times, Kp in 0–9, documented provenance only).</li>
-        <li><b>Topic</b> <code>kp_observations</code>, <b>constant key</b> <code>planetary_kp</code>: one global sequence stays ordered. Dedup by <code>time_tag</code>.</li>
-        <li>Quiet feed (checked Aug 11 + 12: max Kp &lt; 3.5) → a <b>labeled synthetic fixture</b> is the required alert demo.</li>
-      </ul>
+      <div class="metric">Kp ≥ 6</div>
+      <div class="metric-label">Our course-scale threshold for elevated radio-risk conditions.</div>
     </div>
     <div>
-      <pre>{
-  "time_tag":    "2026-08-11T00:10:00Z",
-  "kp_value":    6.3,
-  "source":      "synthetic://kp-threshold-fixture",
-  "ingested_at": "2026-08-11T00:10:05Z"
+      <div class="rule">Emit one alert when the rolling 15-minute maximum first reaches or exceeds 6.</div>
+      <ul>
+        <li>Target user: amateur-radio operators relying on HF propagation.</li>
+        <li>No repeated alerts while the window remains elevated.</li>
+        <li>The rule rearms only after the rolling maximum falls below 6.</li>
+      </ul>
+    </div>
+  </div>
+  <div class="footer"><span>Problem · user · result · why it matters</span><span>2</span></div>
+  <aside class="speaker-notes">Noam · 0:50. Explain the user, the monitoring burden, the exact crossing rule, and why avoiding repeated alerts matters. [Sources] NOAA SWPC scales and project proposal. Data explainer: Kp is a 0-to-9 index that summarizes how disturbed Earth's magnetic field is on a global scale. A higher value means stronger geomagnetic activity, which can interfere with high-frequency radio propagation. It is not a direct measurement of one radio station, and our project does not forecast future Kp.</aside>
+</section>
+
+<section class="slide" id="slide-3">
+  <div class="eyebrow">Data and event contract</div>
+  <h1>Every NOAA observation becomes one ordered Kafka event</h1>
+  <div class="split">
+    <div>
+      <p><strong>Source:</strong> NOAA SWPC one-minute estimated planetary K-index JSON.</p>
+      <p><strong>Topic:</strong> <code>kp_observations</code><br><strong>Key:</strong> <code>planetary_kp</code></p>
+      <p><strong>Validation:</strong> UTC timestamps, Kp from 0-9, approved provenance, exact four-field contract.</p>
+      <p class="source-note">The alert demo uses a clearly labeled synthetic replay because live conditions were quiet. A committed raw NOAA sample verifies the source shape.</p>
+    </div>
+    <div>
+      <pre class="event">{
+  <span class="key">"time_tag"</span>: <span class="value">"2026-08-11T00:10:00Z"</span>,
+  <span class="key">"kp_value"</span>: <span class="value">6.3</span>,
+  <span class="key">"source"</span>: <span class="value">"synthetic://kp-threshold-fixture"</span>,
+  <span class="key">"ingested_at"</span>: <span class="value">"2026-08-11T00:10:05Z"</span>
 }</pre>
-      <p style="font-size:2vh;color:#666">The representative event — the record that produces alert #1. Synthetic provenance is explicit and validator-enforced.</p>
+      <p class="source-note">Representative record: the first event that creates an alert.</p>
     </div>
   </div>
-  <div class="footer"><span>Space Weather Radio-Risk Monitor</span><span>3 / 9</span></div>
+  <div class="footer"><span>Source · Kafka event · key fields · representative record</span><span>3</span></div>
+  <aside class="speaker-notes">Noam · 0:55. Trace the raw estimated_kp field into kp_value. Explain why the synthetic source string is explicit. [Sources] NOAA SWPC planetary K-index endpoint; DATA_SOURCE.md; representative_event.json. Data explainer: The real source is NOAA's Space Weather Prediction Center. Its public JSON endpoint provides preliminary estimated planetary Kp values and timestamps, updated roughly every minute. NOAA derives Kp from magnetic-field observations; the one-minute feed is a frequently updated estimate, not a new independent global measurement every minute. We use time_tag to identify when the estimate applies and estimated_kp as the value used by our rolling-window rule. The producer converts those raw fields into our four-field Kafka event by renaming estimated_kp to kp_value and adding source and ingested_at.</aside>
 </section>
 
-<!-- 4 · ARCHITECTURE -->
-<section class="slide">
-  <span class="speaker">Noam · ~1.5 min</span>
-  <h1>Implemented architecture</h1>
-  <h2>Presentation rubric 3 — architecture, concrete example, design reason</h2>
-  <div class="flow">
-    <div class="box">Labeled JSONL replay<br><small>9 events, incl. 1 duplicate</small></div>
+<section class="slide" id="slide-4">
+  <div class="eyebrow">Implemented architecture</div>
+  <h1>Kafka separates validated ingestion from stateful alert logic</h1>
+  <div class="pipeline">
+    <div class="stage"><b>Replay</b><span>9 labeled JSONL events<br>including 1 duplicate</span></div>
     <div class="arrow">→</div>
-    <div class="box">Replay producer<br><small>validate all, publish in order</small></div>
+    <div class="stage"><b>Producer</b><span>Validate first<br>publish in event order</span></div>
     <div class="arrow">→</div>
-    <div class="box"><b>Kafka</b><br>kp_observations<br><small>1 partition · key planetary_kp</small></div>
+    <div class="stage"><b>Kafka</b><span>1 topic · 1 partition<br>constant global key</span></div>
     <div class="arrow">→</div>
-    <div class="box">Finite consumer<br><small>dedup · 15-min rolling max · crossing rule</small></div>
+    <div class="stage"><b>Consumer</b><span>Deduplicate<br>15-minute rolling max<br>crossing + rearm</span></div>
     <div class="arrow">→</div>
-    <div class="box">alert.json<br>metrics.csv<br><small>→ briefing.txt → evaluation.json</small></div>
+    <div class="stage"><b>Evidence</b><span>alert.json · metrics.csv<br>briefing.txt · evaluation.json</span></div>
   </div>
-  <div class="flow">
-    <div class="box optional">Optional: live OpenAI briefing — wording only, fact-checked, falls back to a deterministic template</div>
-    <div class="box optional">Deliberately omitted: live NOAA poller — same contract would plug in later; quiet data can't demo the alert</div>
+  <p class="design-choice"><strong>Why this architecture:</strong> Kp is one global ordered series, so one partition and one constant key preserve sequence. Kafka keeps the producer and consumer independent and makes replay and duplicates observable.</p>
+  <div class="footer"><span>Concrete example: Kp 6.3 → first crossing → alert #1</span><span>4</span></div>
+  <aside class="speaker-notes">Noam · 1:05, then hand off to Niki. Follow the 6.3 event through each box. Explain the one-topic/one-partition choice. [Sources] Implemented repository architecture; README. Data explainer: Kafka does not change the Kp value or decide whether conditions are risky. It receives each validated observation as a separate message, stores the messages in order in kp_observations, and lets the consumer read them independently. Our Python consumer performs deduplication, calculates the rolling 15-minute maximum, checks for a crossing of Kp 6, and writes the output artifacts.</aside>
+</section>
+
+<section class="slide cue" id="slide-5">
+  <div class="eyebrow" style="color:#cbd9ff">Live demonstration</div>
+  <h1>Leave the slides here</h1>
+  <p class="prompt">Switch to the local terminal, then show the UI.</p>
+  <div class="cue-flow">
+    <div class="cue-step"><b>1 · Terminal</b><span>Run <code style="color:#17212b">./run_demo.sh</code><br>Point out real Kafka startup and replay.</span></div>
+    <div class="cue-step"><b>2 · Result</b><span>Show 9 messages, 1 duplicate, and exactly 2 alerts.</span></div>
+    <div class="cue-step"><b>3 · UI</b><span>Open the local UI and show the alert, metrics, and natural-language briefing.</span></div>
   </div>
-  <ul>
-    <li><b>Why this design:</b> one global Kp series → one topic, one partition, constant key preserves order. Kafka decouples validated producer from consumer and makes duplicates observable.</li>
-    <li>Demo resets the broker every run — <b>no stale offsets, fully reproducible</b>.</li>
-  </ul>
-  <div class="footer"><span>Space Weather Radio-Risk Monitor</span><span>4 / 9</span></div>
+  <div class="footer"><span>Niki leads the demo · Noam explains one event if needed</span><span>5</span></div>
+  <aside class="speaker-notes">Niki · 2:00 maximum. Do not narrate setup. Terminal: run ./run_demo.sh and call out Kafka, counts, artifacts, tests. UI: show the same generated artifacts and briefing; do not claim the UI makes the decision. If anything fails, jump to backup slide 8. [Sources] run_demo.sh and saved artifacts. Data explainer: The required demo uses nine project-created rows because current NOAA data may stay below Kp 6 and never demonstrate an alert. The rows are clearly labeled synthetic and use the exact same four-field contract as real NOAA events. Each JSONL row becomes one Kafka message. The optional live poller also sends genuine current NOAA observations to the same topic, but the replay is what reliably demonstrates crossing, duplicate suppression, window expiration, rearming, and a second alert.</aside>
 </section>
 
-<!-- 5 · REPLAY RESULT -->
-<section class="slide">
-  <span class="speaker">Niki · ~1.5 min</span>
-  <h1>The replay, row by row</h1>
-  <h2>Actual metrics.csv from the verified run — one row per consumed Kafka message</h2>
-  <table>
-    <tr><th>time_tag (UTC)</th><th>Kp</th><th>15-min max</th><th>label</th><th>alert?</th><th>status</th></tr>
-    <tr><td>00:00</td><td>4.0</td><td>4.0</td><td>normal</td><td>–</td><td>accepted</td></tr>
-    <tr><td>00:05</td><td>5.0</td><td>5.0</td><td>normal</td><td>–</td><td>accepted</td></tr>
-    <tr class="true"><td>00:10</td><td>6.3</td><td>6.3</td><td>elevated</td><td>ALERT #1</td><td>accepted</td></tr>
-    <tr class="dup"><td>00:10 (again)</td><td>6.3</td><td>6.3</td><td>elevated</td><td>–</td><td>duplicate_skipped</td></tr>
-    <tr><td>00:20</td><td>5.5</td><td>6.3</td><td>elevated</td><td>– (still elevated)</td><td>accepted</td></tr>
-    <tr><td>00:25</td><td>5.2</td><td>6.3</td><td>elevated</td><td>–</td><td>accepted</td></tr>
-    <tr><td>00:26</td><td>5.0</td><td>5.5</td><td>normal</td><td>– (rearmed)</td><td>accepted</td></tr>
-    <tr class="true"><td>00:27</td><td>7.0</td><td>7.0</td><td>elevated</td><td>ALERT #2</td><td>accepted</td></tr>
-    <tr><td>00:30</td><td>6.7</td><td>7.0</td><td>elevated</td><td>–</td><td>accepted</td></tr>
-  </table>
-  <p style="font-size:2.4vh">One table shows everything: the crossing, the skipped duplicate, no alert-spam while elevated, window decay rearming the rule, and a second crossing.</p>
-  <div class="footer"><span>Space Weather Radio-Risk Monitor</span><span>5 / 9</span></div>
+<section class="slide" id="slide-6">
+  <div class="eyebrow">Evidence and bounded AI</div>
+  <h1>The alert path is deterministic; AI only explains the result</h1>
+  <div class="results">
+    <div class="result"><div class="number">9</div><p>Kafka messages processed, including one deliberate duplicate.</p></div>
+    <div class="result"><div class="number">2</div><p>Expected threshold-crossing alerts, with no alert spam.</p></div>
+    <div class="result"><div class="number">7/7</div><p>Evaluation assertions passed for alerts and AI briefing cases.</p></div>
+  </div>
+  <div class="boundary">
+    <div class="boundary-col good"><h3>Deterministic code decides</h3><p>Rolling maximum · threshold · label · alert · fallback.</p></div>
+    <div class="boundary-arrow">→</div>
+    <div class="boundary-col limited"><h3>Optional AI phrases five facts</h3><p>Two sentences only. Changed numbers, labels, causes, places, or advice are rejected.</p></div>
+  </div>
+  <p class="evidence-line"><strong>Verified:</strong> 141 standard tests + 3 real Kafka integration tests, with a no-key offline path.</p>
+  <div class="footer"><span>Reproducible with one command and no credentials</span><span>6</span></div>
+  <aside class="speaker-notes">Niki · 1:10. Connect the demo result to the test evidence. Be clear that AI is optional wording only and that fallback is the required reliable path. [Sources] pytest results; evaluation/evaluation.json; AI_USAGE.md.</aside>
 </section>
 
-<!-- 6 · VALIDATION & REPRODUCIBILITY -->
-<section class="slide">
-  <span class="speaker">Niki · ~1 min</span>
-  <h1>One command, verified evidence</h1>
-  <h2>./run_demo.sh — reset broker → replay through real Kafka → 4 artifacts → verify → test</h2>
-  <div class="cols">
+<section class="slide" id="slide-7">
+  <div class="eyebrow">Lesson, limitation, and next step</div>
+  <h1>Deterministic replay made the streaming behavior provable</h1>
+  <div class="closing">
     <div>
-      <ul>
-        <li><b>141 tests passed</b> + 3 Kafka integration tests on a clean broker.</li>
-        <li>Artifacts checked <b>field-by-field</b> against a committed expected-results oracle.</li>
-        <li>Three consecutive runs identical; broken run exits nonzero.</li>
-        <li>Passes with <b>no network beyond localhost and no API key</b> (<code>env -u OPENAI_API_KEY</code>).</li>
-      </ul>
+      <h3>What we learned</h3>
+      <p>Quiet live data could not demonstrate a threshold crossing. A labeled replay reliably proves crossing, deduplication, window expiry, and rearming.</p>
+      <h3>Limitation</h3>
+      <p>This is a recent global Kp condition - not a forecast or station-level propagation model.</p>
     </div>
     <div>
-      <pre>$ ./run_demo.sh
-<span class="ok">Processed 9 valid event(s); skipped 0 malformed;
-emitted 2 alert(s)</span>
-<span class="ok">Artifacts match the labeled fixture: 2 alert(s),
-9 metrics row(s), briefing present,
-evaluation 7/7 assertions passed.</span>
-<span class="ok">141 passed, 3 skipped</span>
-Demo complete.</pre>
+      <h3>Realistic next step</h3>
+      <p>Add a long-running consumer that continuously processes live NOAA events and refreshes the UI.</p>
+      <div class="final-line">The result is small, explainable, and reproducible: one ordered stream, one clear rule, and evidence for every alert.</div>
     </div>
   </div>
-  <div class="footer"><span>Space Weather Radio-Risk Monitor</span><span>6 / 9</span></div>
+  <div class="footer"><span>Questions</span><span>7</span></div>
+  <aside class="speaker-notes">Niki · 0:40. State one evidence-based lesson, one honest limitation, and one scoped next step. End on reproducibility, then invite questions. Total target: 7:00. [Sources] DATA_SOURCE.md; implemented project evidence.</aside>
 </section>
 
-<!-- 7 · AI BOUNDARY -->
-<section class="slide">
-  <span class="speaker">Niki · ~1 min</span>
-  <h1>AI writes sentences, never decisions</h1>
-  <h2>Bounded briefing + automatic verification + deterministic fallback</h2>
-  <div class="flow">
-    <div class="box">5 approved facts<br><small>latest Kp · rolling max · UTC window · label</small></div>
-    <div class="arrow">→</div>
-    <div class="box">gpt-5-nano (optional)<br><small>two sentences, 10 s timeout</small></div>
-    <div class="arrow">→</div>
-    <div class="box">Automatic validator<br><small>rejects changed numbers, wrong label, invented causes/places/advice, &gt;2 sentences</small></div>
-    <div class="arrow">→</div>
-    <div class="box">briefing.txt<br><small>accepted candidate or deterministic fallback</small></div>
-  </div>
-  <ul>
-    <li>Six committed evaluation cases (correct / wrong number / wrong label / unsupported detail / too long / API down) — <b>all decided as expected, 7/7 assertions</b>, no network needed to re-check.</li>
-    <li>The AI can never trigger, suppress, or relabel an alert. Rejection is recorded, never silently repaired.</li>
-  </ul>
-  <div class="footer"><span>Space Weather Radio-Risk Monitor</span><span>7 / 9</span></div>
-</section>
-
-<!-- 8 · LESSON / LIMITATION / NEXT STEP -->
-<section class="slide">
-  <span class="speaker">Both · ~0.5 min</span>
-  <h1>Lesson, limitation, next step</h1>
-  <h2>Presentation rubric 4 — evidence-based lesson and a realistic next step</h2>
-  <ul>
-    <li><b>Lesson:</b> deterministic replay beat live data for proving stream logic — a quiet feed can never show a threshold crossing, but a labeled fixture shows crossing, dedup, and rearm every single run.</li>
-    <li><b>Limitation:</b> this reports a recent estimated <i>global</i> Kp condition — not a forecast, not a station-level propagation model; the validator checks facts, not eloquence.</li>
-    <li><b>Next step:</b> the deferred 60-second live NOAA poller — the contract, topic, and consumer already accept normalized NOAA records unchanged.</li>
-  </ul>
-  <div class="bigfact">Everything you saw is reproducible from the ZIP with one command and no credentials.</div>
-  <div class="footer"><span>Space Weather Radio-Risk Monitor</span><span>8 / 9</span></div>
-</section>
-
-<!-- 9 · BACKUP EVIDENCE -->
-<section class="slide">
-  <span class="speaker">Backup</span>
-  <h1>Backup: saved terminal evidence</h1>
-  <h2>If Docker, Wi-Fi, NOAA, or OpenAI fails on stage, this slide is the demo</h2>
-  <pre>$ ./run_demo.sh
-==&gt; Resetting the local Kafka broker (a fresh broker prevents stale topics and offsets)
-==&gt; Starting the finite Kafka consumer in the background
-==&gt; Publishing the nine-message deterministic replay through Kafka
-Published 9 event(s) · Topic=kp_observations key=planetary_kp partitions=[0]
-<span class="ok">Processed 9 valid event(s); skipped 0 malformed; emitted 2 alert(s)</span>
-==&gt; Writing the deterministic briefing (no API key or network required)
-<span class="hot">Elevated radio-risk conditions were detected with a latest Kp of 7 and a rolling
-15-minute maximum of 7. The UTC window ran from 2026-08-11T00:12:00Z to
-2026-08-11T00:27:00Z, and the rule-based risk label was elevated.</span>
-==&gt; Writing deterministic evaluation evidence
-Evaluation: 7/7 assertions passed
-==&gt; Verifying artifacts against data/fixtures/replay_expected.json
-<span class="ok">Artifacts match the labeled fixture: 2 alert(s), 9 metrics row(s),
-briefing present, evaluation 7/7 assertions passed.</span>
-==&gt; Running the automated test suite
+<section class="slide" id="slide-8">
+  <div class="eyebrow">Backup · use only if the live demo fails</div>
+  <h1>Saved terminal evidence</h1>
+  <pre class="terminal">$ ./run_demo.sh
+Published 9 event(s) · Topic=kp_observations · key=planetary_kp
+<span class="ok">Processed 9 valid event(s); emitted 2 alert(s)</span>
+Briefing source: fallback
+Evaluation: <span class="ok">7/7 assertions passed</span>
+<span class="ok">Artifacts match the labeled fixture:</span>
+  2 alerts · 9 metrics rows · briefing present
 <span class="ok">141 passed, 3 skipped</span>
-Demo complete.  Artifacts: outputs/alert.json · outputs/metrics.csv ·
-outputs/briefing.txt · evaluation/evaluation.json</pre>
-  <div class="footer"><span>Space Weather Radio-Risk Monitor</span><span>9 / 9</span></div>
+Demo complete.
+
+Artifacts
+  outputs/alert.json
+  outputs/metrics.csv
+  outputs/briefing.txt
+  evaluation/evaluation.json</pre>
+  <div class="footer"><span>Docker, Wi-Fi, NOAA, or OpenAI failure does not change the story</span><span>8</span></div>
+  <aside class="speaker-notes">Backup only. This is not part of the seven-minute sequence unless the terminal/UI fails. [Sources] Saved verified run output.</aside>
 </section>
 
 <script>
-  // Arrow-key navigation between slides when presented in a browser.
   const slides = [...document.querySelectorAll('.slide')];
-  let i = 0;
-  function go(n) {
-    i = Math.max(0, Math.min(slides.length - 1, n));
-    slides[i].scrollIntoView({behavior: 'instant'});
+  let index = 0;
+  function go(next) {
+    index = Math.max(0, Math.min(slides.length - 1, next));
+    history.replaceState(null, '', '#slide-' + (index + 1));
+    slides[index].scrollIntoView({behavior: 'instant'});
   }
-  addEventListener('keydown', e => {
-    if (['ArrowRight','PageDown',' '].includes(e.key)) { e.preventDefault(); go(i+1); }
-    if (['ArrowLeft','PageUp'].includes(e.key)) { e.preventDefault(); go(i-1); }
-    if (e.key === 'Home') go(0);
-    if (e.key === 'End') go(slides.length-1);
+  function syncFromHash() {
+    const match = location.hash.match(/slide-(\d+)/);
+    if (match) go(Number(match[1]) - 1);
+  }
+  addEventListener('load', syncFromHash);
+  addEventListener('hashchange', syncFromHash);
+  addEventListener('keydown', event => {
+    if (['ArrowRight','PageDown',' '].includes(event.key)) { event.preventDefault(); go(index + 1); }
+    if (['ArrowLeft','PageUp'].includes(event.key)) { event.preventDefault(); go(index - 1); }
+    if (event.key === 'Home') go(0);
+    if (event.key === 'End') go(slides.length - 1);
   });
 </script>
 </body>
