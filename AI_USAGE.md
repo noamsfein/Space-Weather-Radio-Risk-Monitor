@@ -155,8 +155,9 @@ same validator accepts it.
 - `tests/test_evaluate.py` verifies all six saved cases, evidence fields,
   byte-for-byte deterministic output, no-network behavior, failure exit status,
   and atomic writes.
-- The full local suite on 2026-08-12 passed: 147 tests passed and 3 opt-in Kafka
-  integration tests were skipped.
+- The full local suite on 2026-08-12 passed: 167 standard tests passed and 3
+  opt-in Kafka integration tests were skipped by the default command. All 3
+  Docker-backed integration tests also passed when enabled separately.
 - The committed required demo evidence records two expected alerts, nine
   metrics rows, and 7/7 evaluation assertions without an OpenAI request.
 
@@ -189,7 +190,7 @@ responsible for the submitted implementation and explanation.
 | 2026-08-12 | Codex | Scaffolded the repository, Python environment, and local Kafka setup | Chose local Docker Kafka, one topic and partition, and a limited pinned dependency set | Reinstalled dependencies and tested broker health, round trips, restart, and cleanup |
 | 2026-08-12 | Codex | Drafted the event contract, replay producer, Kafka I/O, processor, and output writers | Retained four canonical fields, constant-key ordering, event-time deduplication, an inclusive window, threshold crossing/rearm semantics, and atomic artifacts | Tested fixtures and edge cases, then compared the real Kafka path with the committed oracle |
 | 2026-08-12 | Codex | Drafted the bounded briefing, validator, fallback, and evaluation harness | Retained a five-field wording-only boundary, explicit rejection instead of repair, a no-key fallback, and project-authored evaluation cases | Ran briefing/evaluation tests, regenerated saved evidence, and confirmed a deliberately wrong expectation fails |
-| 2026-08-12 | Codex | Reviewed the repository and completed this AI disclosure | Required honest separation between deterministic cases and live model evidence; did not claim an unsaved live call | Ran the full local suite (147 passed, 3 skipped) and regenerated `evaluation/evaluation.json` |
+| 2026-08-12 | Codex | Reviewed the repository and completed this AI disclosure | Required honest separation between deterministic cases and live model evidence; did not claim an unsaved live call | Ran the full local suite (167 passed, 3 opt-in tests skipped), separately passed all 3 Docker-backed integration tests, and regenerated `evaluation/evaluation.json` |
 
 This log describes assistance, not authorship or independent verification by the
 model. Team members should review this disclosure and add any material AI use
