@@ -420,21 +420,23 @@ The live NOAA poller is not on the critical path. Build it only after the replay
   - Print artifact paths and a short result summary.
   - Done when: one command after documented setup runs start to finish, exits nonzero on failure, and three consecutive runs do not reuse stale output or offsets.
 
-- [~] **E2E-1 · Required end-to-end replay acceptance** · Initials: `NN` · PR: `#28`
+- [x] **E2E-1 · Required end-to-end replay acceptance** · Initials: `NN, NF` · PR: `#28, #TBD`
   - Prerequisites: DEMO-1, TEST-1, TEST-2, TEST-3.
   - Branch suffix: `verify-end-to-end-replay`.
   - Run: `./run_demo.sh` through the actual local Kafka broker.
   - Verify: expected alerts; metrics match the fixture; duplicate counts match; briefing is accepted or uses fallback; evaluation matches labels.
   - Save: representative `outputs/` and `evaluation/` artifacts.
   - Done when: both partners independently run it successfully and can trace one record from JSONL to Kafka to alert to briefing.
-  - Niki's run 2026-08-12 (NN): `./run_demo.sh` on merged `main` passed with 9 events through the local broker, 2 alerts at the labeled timestamps, all metrics rows and duplicate counts matching the fixture, a briefing via deterministic fallback, a 7/7 evaluation, and 141 passing tests. Representative artifacts committed under `outputs/` and `evaluation/`. Awaiting Noam's independent run before checking off.
+  - Niki's run 2026-08-12 (NN): `./run_demo.sh` on merged `main` passed with 9 events through the local broker, 2 alerts at the labeled timestamps, all metrics rows and duplicate counts matching the fixture, a briefing via deterministic fallback, a 7/7 evaluation, and 141 passing tests. Representative artifacts committed under `outputs/` and `evaluation/`.
+  - Noam's clean-clone run 2026-08-12 (NF): cloned current `main` at `e01cc1b`, followed the README setup, and ran `./run_demo.sh` through a fresh local broker. The run consumed 9 messages, processed 8 unique events, skipped 1 duplicate, emitted exactly 2 alerts at the labeled timestamps, used the deterministic fallback briefing, passed the 7/7 evaluation, and completed with 167 tests passed plus 3 documented opt-in integration tests skipped. Generated artifacts were byte-identical to the committed evidence. Evidence is also recorded on PR #36.
 
-- [~] **E2E-2 · Offline/no-key acceptance** · Initials: `NN` · PR: `#28`
+- [x] **E2E-2 · Offline/no-key acceptance** · Initials: `NN, NF` · PR: `#28, #TBD`
   - Prerequisites: E2E-1.
   - Branch suffix: `verify-offline-fallback`.
   - Run with `OPENAI_API_KEY` unset and without relying on NOAA.
   - Done when: replay still passes, `briefing.txt` clearly comes from the deterministic fallback, and the README identifies this as the required reviewer path.
   - Niki's run 2026-08-12 (NN): `env -u OPENAI_API_KEY ./run_demo.sh` passed with identical artifacts; briefing source reported `fallback`, and the README already states no network or API key is required for the required replay review path.
+  - Noam's clean-clone run 2026-08-12 (NF): `env -u OPENAI_API_KEY ./run_demo.sh` passed independently with the same counts, fallback briefing, 7/7 evaluation, 167 passing tests, and byte-identical artifacts. No NOAA request or OpenAI API key was used.
 
 - [ ] **E2E-DATA · Larger replay robustness test (optional after the base path is green)** · Initials: `____` · PR: `____`
   - Prerequisites: E2E-1 and E2E-2.
@@ -459,11 +461,12 @@ The live NOAA poller is not on the critical path. Build it only after the replay
 
 ## Phase 6: README, report, and rubric evidence
 
-- [~] **DOC-1 · Make README commands factual** · Initials: `NN` · PR: `#29`
+- [x] **DOC-1 · Make README commands factual** · Initials: `NN, NF` · PR: `#29, #TBD`
   - Prerequisites: E2E-1.
   - Replace target/planned language with exact tested prerequisites, setup, one-command run, expected output, validation, troubleshooting, and cleanup.
   - Map any layout differences from the required package structure.
   - Done when: the other partner follows only the README from a clean copy and succeeds.
+  - Clean-clone audit 2026-08-12 (NF): followed the README from a new clone at `e01cc1b`; environment setup and both required demo commands succeeded. Updated the example test count from 147 to 167 and corrected the architecture note to identify the live NOAA poller as implemented but outside the required replay path.
 
 - [x] **DOC-2 · Finalize source documentation** · Initials: `NN` · PR: `#30`
   - Prerequisites: DATA-1, plus INGEST-2 or a documented decision to omit it.
