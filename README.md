@@ -4,9 +4,7 @@ Kafka-based final project for MSDS 682, Data Stream Processing (Summer 2026).
 
 **Team:** Noam Fein (`nsfein`) and Niki Naderzad (`nnaderzad`)
 
-**Approved proposal:** [`output/pdf/final_project_proposal_nsfein_nnaderzad.pdf`](output/pdf/final_project_proposal_nsfein_nnaderzad.pdf)
-
-**Current status:** Implemented and verified. Every command in this README has been run as written; `./run_demo.sh` passes end-to-end through the local Kafka broker, with and without an OpenAI key. Task-level progress and evidence are tracked in [the team checklist](docs/project-checklist.md). The presentation scenario and backup procedure are in [the demo plan](docs/demo-plan.md).
+**Current status:** Implemented and verified. Every required command in this README has been run as written; `./run_demo.sh` passes end-to-end through the local Kafka broker without NOAA access or an OpenAI key.
 
 **Repository:** `https://github.com/noamsfein/Space-Weather-Radio-Risk-Monitor`. This directory now has its own Git root and `main` tracks the project repository rather than the unrelated home-directory repository.
 
@@ -220,10 +218,9 @@ One representative event can be traced across every box: the record at `data/fix
 
 Dependencies are pinned in `requirements.txt`; `requests` supports the optional live NOAA poller and source-viability checks. Secrets belong in a local `.env`, which must never be submitted. `.env.example` contains no credentials and preselects the shared, non-secret model name `gpt-5-nano`.
 
-Niki's one-time shared-project and private-key setup is documented in
-[`docs/niki-openai-setup.md`](docs/niki-openai-setup.md). Each partner uses a
-separate local key; neither key is shared or committed. Both partners use
-`OPENAI_MODEL=gpt-5-nano` for the optional live briefing.
+For the optional live briefing, each partner uses a separate private local key;
+keys are never shared or committed. The configured model is
+`OPENAI_MODEL=gpt-5-nano`.
 
 The local broker uses the official `apache/kafka:4.1.2` image in single-node KRaft mode. Docker Compose exposes it at `localhost:9092`; Kafka does not need to be installed separately. Its state is disposable: restarting the same container preserves it, while removing and recreating the container starts a clean broker. Start and inspect it with:
 
@@ -264,12 +261,10 @@ Wait for the `kafka` service to report `healthy` before running Kafka clients. T
 ├── outputs/                 # alert.json, metrics.csv, briefing.txt
 ├── evaluation/              # evaluation.json (+ optional live candidate)
 ├── tests/
-├── docs/
-│   └── project-checklist.md
 └── report.pdf
 ```
 
-Differences from the proposal's planned layout: `outputs.py` became the two focused writers `alert_output.py` and `metrics_output.py`, and `settings.py` was unnecessary because configuration lives in explicit constants and CLI flags. The detailed task sequence, prerequisites, and acceptance checks are in [docs/project-checklist.md](docs/project-checklist.md). Changes to a public field, artifact, command, topic, key, threshold, or window must be reflected in the documentation and tests.
+The submitted structure maps every required component directly: source and AI documentation are at the top level, application code is in `src/`, deterministic input is in `data/`, representative results are in `outputs/`, validation evidence is in `evaluation/`, and the written report is `report.pdf`.
 
 ## Local review path
 
@@ -409,53 +404,17 @@ read from `outputs/` and `evaluation/`, nothing recomputed. A
 approved facts only, the same six validation checks (displayed on screen), and
 the deterministic fallback on any failure. It binds to `127.0.0.1` only and
 adds no dependencies. This UI is not part of the graded review path; the
-terminal output of `./run_demo.sh` remains the required evidence. Walkthrough:
-[docs/ui-demo.md](docs/ui-demo.md).
+terminal output of `./run_demo.sh` remains the required evidence.
 
 ## Team ownership
 
-| Area | Lead | Cross-review |
+| Primary contribution | Student | Cross-review |
 |---|---|---|
-| NOAA ingestion, event validation, replay producer, live poller | Noam | Niki |
-| Consumer, window calculation, outputs, AI evaluation | Niki | Noam |
-| Kafka integration, tests, documentation, report, presentation | Shared approximately 50-50 | Both |
+| Event contract, Kafka I/O, replay and live producers, stream processor, rolling-window/crossing logic, output writers, briefing validator, and evaluation harness | Noam | Niki |
+| Contract and edge-case test coverage, one-command demo, end-to-end and no-key acceptance, README and data-source documentation, architecture communication, final report, and optional presentation/UI work | Niki | Noam |
+| Fixture design, source verification, Kafka integration checks, final documentation review, and submission verification | Shared | Both |
 
-A lead is not the only person responsible. Both students will run the full demo, review the other person's work, and be able to explain the complete event path, AI boundary, and evaluation.
-
-## Development workflow
-
-Use one branch per checklist task:
-
-```text
-<owner>/<task>-<short-description>
-```
-
-Examples for this project include `noam/ingest-noaa-data`, `noam/add-replay-producer`, and `niki/process-kp-window`.
-
-After the project has a dedicated Git root, the normal workflow is:
-
-```bash
-git switch main
-git pull --ff-only
-git switch -c noam/task-description
-
-# Work, test, and commit
-git push -u origin noam/task-description
-
-# Open a PR targeting main
-gh pr create --base main
-```
-
-Replace the example branch with the actual owner and task. The other partner reviews the PR, and a checklist task is not complete until the PR is merged into `main` and manually verified. Full collaboration rules are in [docs/project-checklist.md](docs/project-checklist.md).
-
-## Course deliverables
-
-- Presentation: Thursday, August 13, 2026, 5:40 to 5:48 PM PDT. Seven minutes plus one minute of Q&A; both team members must speak.
-- Written report and code ZIP: Friday, August 14, 2026, 11:59 PM PDT.
-- ZIP name: `final_project_nsfein_nnaderzad.zip`.
-- Top-level folder: `final_project_nsfein_nnaderzad/`.
-
-The detailed implementation, presentation, report, clean-room review, and packaging steps are tracked in [docs/project-checklist.md](docs/project-checklist.md).
+Responsibilities were divided approximately evenly by project area. Both students ran the full demo, reviewed the other person's work, and can explain the complete event path, AI boundary, and evaluation.
 
 ## Limitations
 

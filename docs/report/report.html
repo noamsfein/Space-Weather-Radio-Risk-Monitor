@@ -254,14 +254,15 @@ fallback. Cleanup: <code>docker compose down -v</code>.
 
 <h3>Team contributions</h3>
 <table>
-<tr><th>Area</th><th>Lead</th><th>Cross-review</th></tr>
-<tr><td>Event contract, Kafka I/O, replay producer, processor and crossing rule, alert/metrics writers, stream consumer, briefing + validator, evaluation harness</td><td>Noam</td><td>Niki</td></tr>
-<tr><td>Test-coverage audits and contract edge-case tests, one-command demo script (<code>run_demo.sh</code>), end-to-end and offline acceptance runs, README/data-source finalization, architecture chart, report and presentation drafts</td><td>Niki</td><td>Noam</td></tr>
-<tr><td>Fixture design, source verification, checklist and workflow</td><td>Shared</td><td>Both</td></tr>
+<tr><th>Primary contribution</th><th>Student</th><th>Cross-review</th></tr>
+<tr><td>Event contract, Kafka I/O, replay and live producers, stream processor, rolling-window/crossing logic, output writers, briefing validator, and evaluation harness</td><td>Noam</td><td>Niki</td></tr>
+<tr><td>Contract and edge-case test coverage, one-command demo, end-to-end and no-key acceptance, README and data-source documentation, architecture communication, final report, and optional presentation/UI work</td><td>Niki</td><td>Noam</td></tr>
+<tr><td>Fixture design, source verification, Kafka integration checks, final documentation review, and submission verification</td><td>Shared</td><td>Both</td></tr>
 </table>
 <p>
-All work merged through reviewed pull requests on task-scoped branches; both partners ran the full
-demo independently and can explain every stage.
+Responsibilities were divided approximately evenly by project area. Work merged through reviewed
+pull requests on task-scoped branches; both partners ran the full demo independently and can explain
+every stage.
 </p>
 
 <h3>Limitations and next step</h3>
@@ -280,6 +281,18 @@ the implemented 60-second NOAA poller continues publishing new timestamps. It wo
 artifacts atomically and let the optional UI refresh automatically. The deterministic replay would
 remain the reviewer path because live conditions may never cross Kp 6 during a demonstration.
 </p>
+
+<h3>References</h3>
+<ol>
+  <li>NOAA/NWS Space Weather Prediction Center. “Planetary K-index one-minute estimated values.”
+  <code>https://services.swpc.noaa.gov/json/planetary_k_index_1m.json</code>. Accessed August 12, 2026.</li>
+  <li>NOAA Space Weather Prediction Center. “Planetary K-index.”
+  <code>https://www.swpc.noaa.gov/products/planetary-k-index</code>. Accessed August 14, 2026.</li>
+  <li>NOAA Space Weather Prediction Center. “NOAA Space Weather Scales.”
+  <code>https://www.swpc.noaa.gov/noaa-scales-explanation</code>. Accessed August 14, 2026.</li>
+  <li>National Weather Service. “Disclaimer.”
+  <code>https://www.weather.gov/disclaimer</code>. Accessed August 14, 2026.</li>
+</ol>
 </section>
 
 </body>
