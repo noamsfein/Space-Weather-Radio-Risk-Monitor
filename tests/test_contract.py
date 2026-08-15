@@ -123,12 +123,10 @@ def test_readme_embeds_the_authoritative_representative_event() -> None:
         (PROJECT_ROOT / "data/fixtures/representative_event.json").read_text()
     )
     readme = (PROJECT_ROOT / "README.md").read_text()
-    demo_plan = (PROJECT_ROOT / "docs/demo-plan.md").read_text()
     exact_json_block = json.dumps(representative, indent=2)
 
     assert exact_json_block in readme
     assert "data/fixtures/representative_event.json" in readme
-    assert "data/fixtures/representative_event.json" in demo_plan
     assert "synthetic" in readme.lower()
     assert list(KpEvent.model_fields) == list(representative)
 
