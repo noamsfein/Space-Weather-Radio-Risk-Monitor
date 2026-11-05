@@ -1,6 +1,6 @@
 # Space Weather Radio-Risk Monitor
 
-Kafka-based final project for MSDS 682, Data Stream Processing (Summer 2026).
+Kafka-based project for MSDS 682, Data Stream Processing 
 
 **Team:** Noam Fein (`nsfein`) and Niki Naderzad (`nnaderzad`)
 
